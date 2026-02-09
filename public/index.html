@@ -725,196 +725,405 @@
 
     /* ── Sign Overlay (Controller) ── */
     #sign-overlay {
-      position: fixed; inset: 0; z-index: 3500;
-      display: none; align-items: center; justify-content: center;
-      background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+      position: fixed;
+      inset: 0;
+      z-index: 3500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
     }
-    #sign-overlay.active { display: flex; }
+
+    #sign-overlay.active {
+      display: flex;
+    }
+
     #sign-overlay .sign-box {
-      background: #fff; border-radius: 24px; padding: 32px;
-      text-align: center; box-shadow: 0 12px 60px rgba(0,0,0,0.3);
-      max-width: 420px; width: 90%;
+      background: #fff;
+      border-radius: 24px;
+      padding: 32px;
+      text-align: center;
+      box-shadow: 0 12px 60px rgba(0, 0, 0, 0.3);
+      max-width: 420px;
+      width: 90%;
     }
+
     #sign-overlay .sign-title {
       font-family: 'Zen Kaku Gothic New', sans-serif;
-      font-size: 22px; font-weight: 700; color: #333; margin-bottom: 16px;
+      font-size: 22px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 16px;
     }
+
     #sign-canvas {
-      width: 100%; aspect-ratio: 3/1;
-      border: 2px solid #ddd; border-radius: 12px;
-      cursor: crosshair; touch-action: none; background: #fafafa;
+      width: 100%;
+      aspect-ratio: 3/1;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      cursor: crosshair;
+      touch-action: none;
+      background: #fafafa;
     }
+
     #sign-overlay .sign-actions {
-      display: flex; gap: 12px; margin-top: 16px; justify-content: center;
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      justify-content: center;
     }
+
     #sign-overlay .sign-btn {
-      padding: 10px 28px; border-radius: 10px;
+      padding: 10px 28px;
+      border-radius: 10px;
       font-family: 'M PLUS Rounded 1c', sans-serif;
-      font-size: 15px; font-weight: 700; cursor: pointer; border: none;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
     }
-    .sign-btn-clear { background: #eee; color: #666; }
-    .sign-btn-done { background: #FF3ED4; color: #fff; }
+
+    .sign-btn-clear {
+      background: #eee;
+      color: #666;
+    }
+
+    .sign-btn-done {
+      background: #FF3ED4;
+      color: #fff;
+    }
 
     /* ── Mobile Gallery (Instagram-style) ── */
     #ar-viewer-ui {
-      display: none; width: 100vw; min-height: 100vh;
-      background: #fff; flex-direction: column;
-      overflow-y: auto; overflow-x: hidden;
+      display: none;
+      width: 100vw;
+      min-height: 100vh;
+      background: #fff;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
+
     /* Header */
     .ig-header {
-      position: sticky; top: 0; z-index: 100;
-      background: #fff; border-bottom: 1px solid #dbdbdb;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid #dbdbdb;
       padding: 12px 16px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+
     .ig-header-title {
       font-family: 'Zen Kaku Gothic New', sans-serif;
-      font-size: 18px; font-weight: 700; color: #262626;
+      font-size: 18px;
+      font-weight: 700;
+      color: #262626;
     }
+
     /* Profile area */
     .ig-profile {
-      padding: 20px 16px; display: flex; align-items: center; gap: 24px;
+      padding: 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
       border-bottom: 1px solid #dbdbdb;
     }
+
     .ig-avatar {
-      width: 80px; height: 80px; border-radius: 50%;
-      border: 3px solid #FF3ED4; padding: 3px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; overflow: hidden; background: #fafafa;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3px solid #FF3ED4;
+      padding: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+      background: #fafafa;
     }
-    .ig-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+    .ig-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
     .ig-stats {
-      display: flex; gap: 24px; flex: 1; justify-content: center;
+      display: flex;
+      gap: 24px;
+      flex: 1;
+      justify-content: center;
     }
-    .ig-stat { text-align: center; }
+
+    .ig-stat {
+      text-align: center;
+    }
+
     .ig-stat-num {
-      font-size: 18px; font-weight: 700; color: #262626; display: block;
+      font-size: 18px;
+      font-weight: 700;
+      color: #262626;
+      display: block;
     }
-    .ig-stat-label { font-size: 12px; color: #8e8e8e; }
+
+    .ig-stat-label {
+      font-size: 12px;
+      color: #8e8e8e;
+    }
+
     /* Featured work (currently viewed) */
     .ig-featured {
-      padding: 0; border-bottom: 1px solid #dbdbdb;
+      padding: 0;
+      border-bottom: 1px solid #dbdbdb;
     }
+
     .ig-featured-wrap {
-      width: 100%; aspect-ratio: 4/5; background: #1a1a1a;
-      position: relative; overflow: hidden;
+      width: 100%;
+      aspect-ratio: 4/5;
+      background: #1a1a1a;
+      position: relative;
+      overflow: hidden;
     }
-    .ig-featured-wrap canvas { width: 100% !important; height: 100% !important; }
+
+    .ig-featured-wrap canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
     .ig-featured-info {
-      padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
+
     .ig-featured-author {
-      font-size: 14px; font-weight: 600; color: #262626;
+      font-size: 14px;
+      font-weight: 600;
+      color: #262626;
     }
-    .ig-featured-actions { display: flex; gap: 12px; }
+
+    .ig-featured-actions {
+      display: flex;
+      gap: 12px;
+    }
+
     .ig-action-btn {
-      padding: 8px 16px; border-radius: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
       font-family: 'M PLUS Rounded 1c', sans-serif;
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      border: 1px solid #dbdbdb; background: #fff; color: #262626;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid #dbdbdb;
+      background: #fff;
+      color: #262626;
     }
+
     .ig-action-btn.primary {
-      background: #0095f6; color: #fff; border-color: #0095f6;
+      background: #0095f6;
+      color: #fff;
+      border-color: #0095f6;
     }
+
     /* Grid section */
     .ig-grid-header {
-      padding: 12px 16px; border-bottom: 1px solid #dbdbdb;
-      display: flex; justify-content: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid #dbdbdb;
+      display: flex;
+      justify-content: center;
     }
+
     .ig-grid-tab {
-      font-size: 12px; font-weight: 600; color: #262626;
-      text-transform: uppercase; letter-spacing: 1px;
-      padding: 8px 0; border-top: 2px solid #262626;
+      font-size: 12px;
+      font-weight: 600;
+      color: #262626;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 8px 0;
+      border-top: 2px solid #262626;
     }
+
     .ig-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 2px; padding: 2px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      padding: 2px;
     }
+
     .ig-grid-item {
-      aspect-ratio: 4/5; overflow: hidden; cursor: pointer;
-      position: relative; background: #fafafa;
+      aspect-ratio: 4/5;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      background: #fafafa;
     }
+
     .ig-grid-item img {
-      width: 100%; height: 100%; object-fit: cover;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
       transition: opacity 0.2s;
     }
-    .ig-grid-item:active img { opacity: 0.7; }
-    .ig-grid-item .grid-sign {
-      position: absolute; bottom: 4px; right: 6px;
-      font-size: 10px; color: rgba(255,255,255,0.8);
-      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+
+    .ig-grid-item:active img {
+      opacity: 0.7;
     }
+
+    .ig-grid-item .grid-sign {
+      position: absolute;
+      bottom: 4px;
+      right: 6px;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.8);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    }
+
     /* Detail modal */
     #ig-detail-modal {
-      position: fixed; inset: 0; z-index: 5000;
-      display: none; align-items: center; justify-content: center;
-      background: rgba(0,0,0,0.85);
+      position: fixed;
+      inset: 0;
+      z-index: 5000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.85);
     }
-    #ig-detail-modal.active { display: flex; }
+
+    #ig-detail-modal.active {
+      display: flex;
+    }
+
     .ig-detail-box {
-      background: #fff; border-radius: 12px; overflow: hidden;
-      max-width: 480px; width: 95%;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      max-width: 480px;
+      width: 95%;
     }
+
     .ig-detail-video {
-      width: 100%; aspect-ratio: 4/5; background: #1a1a1a;
-      position: relative; overflow: hidden;
+      width: 100%;
+      aspect-ratio: 4/5;
+      background: #1a1a1a;
+      position: relative;
+      overflow: hidden;
     }
-    .ig-detail-video canvas { width: 100% !important; height: 100% !important; }
+
+    .ig-detail-video canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
     .ig-detail-info {
       padding: 14px 16px;
     }
-    .ig-detail-author { font-size: 14px; font-weight: 600; color: #262626; }
-    .ig-detail-actions {
-      display: flex; gap: 8px; margin-top: 10px;
+
+    .ig-detail-author {
+      font-size: 14px;
+      font-weight: 600;
+      color: #262626;
     }
+
+    .ig-detail-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
     .ig-detail-close {
-      position: absolute; top: 16px; right: 16px;
-      width: 32px; height: 32px; border-radius: 50%;
-      background: rgba(0,0,0,0.6); color: #fff; border: none;
-      font-size: 18px; cursor: pointer; z-index: 10;
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      z-index: 10;
     }
 
     /* ── Emotion Bar (shared) ── */
     .emotion-bar {
-      display: flex; height: 8px; border-radius: 4px; overflow: hidden;
-      width: 100%; background: #eee;
+      display: flex;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      width: 100%;
+      background: #eee;
     }
+
     .emotion-bar-segment {
-      height: 100%; transition: width 0.4s ease;
+      height: 100%;
+      transition: width 0.4s ease;
     }
+
     .emotion-label-row {
-      display: flex; gap: 8px; flex-wrap: wrap;
-      justify-content: center; margin-top: 6px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 6px;
     }
+
     .emotion-label {
-      display: flex; align-items: center; gap: 3px;
-      font-size: 11px; color: #555;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      color: #555;
     }
+
     .emotion-dot {
-      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
 
     /* ── QR Popup emotion section ── */
     .qr-emotion-section {
-      margin: 16px 0 20px; text-align: left;
+      margin: 16px 0 20px;
+      text-align: left;
     }
+
     .qr-emotion-title {
-      font-size: 13px; font-weight: 600; color: #555;
-      margin-bottom: 8px; text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 8px;
+      text-align: center;
     }
 
     /* ── Mobile Gallery emotion ── */
     .ig-emotion-summary {
-      padding: 0 16px 12px; border-bottom: 1px solid #dbdbdb;
+      padding: 0 16px 12px;
+      border-bottom: 1px solid #dbdbdb;
     }
-    .ig-emotion-summary .emotion-bar { height: 10px; border-radius: 5px; }
+
+    .ig-emotion-summary .emotion-bar {
+      height: 10px;
+      border-radius: 5px;
+    }
+
     .ig-featured-emotion {
       padding: 8px 16px 12px;
     }
+
     .ig-grid-item.has-emotion {
       border-bottom: 4px solid var(--emotion-color, transparent);
     }
+
     .ig-detail-emotion {
       padding: 8px 16px 4px;
     }
@@ -1131,7 +1340,9 @@
     </div>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"
+    integrity="sha384-Gr6Lu2Ajx28mzwyVR8CFkULdCU7kMlZ9UthydroVj82CJH82sA255dGqXVnGN263"
+    crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
   <script>
     // ══════════════════════════════════════════════════════════════
@@ -1173,13 +1384,24 @@
     const role = workId ? 'arViewer' : (params.get('role') || 'viewer');
 
     // Robust Socket.io with auto-reconnect
-    const socket = io({
-      reconnection: true,
-      reconnectionAttempts: Infinity,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      timeout: 20000
-    });
+    let socket;
+    try {
+      socket = io({
+        reconnection: true,
+        reconnectionAttempts: Infinity,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        timeout: 20000
+      });
+    } catch (e) {
+      console.warn('Socket.io failed to initialize:', e);
+      // Dummy socket to prevent crashes
+      socket = {
+        on: () => { },
+        emit: () => { },
+        connected: false
+      };
+    }
 
     socket.on('connect', () => console.log('Connected'));
     socket.on('disconnect', () => console.log('Disconnected, reconnecting...'));
@@ -1248,11 +1470,11 @@
     //  Emotion Utilities (shared across all roles)
     // ══════════════════════════════════════════════════════════════
     const EMOTION_META = {
-      joy:     { label: '楽しい', icon: '🌟', hex: '#FFD700' },
-      shock:   { label: '驚き',   icon: '⚡',  hex: '#FF8C00' },
-      sad:     { label: '切ない', icon: '💧', hex: '#4682B4' },
-      confuse: { label: '混乱',   icon: '🌀', hex: '#9370DB' },
-      fire:    { label: '刺激的', icon: '🔥', hex: '#FF4500' }
+      joy: { label: '楽しい', icon: '🌟', hex: '#FFD700' },
+      shock: { label: '驚き', icon: '⚡', hex: '#FF8C00' },
+      sad: { label: '切ない', icon: '💧', hex: '#4682B4' },
+      confuse: { label: '混乱', icon: '🌀', hex: '#9370DB' },
+      fire: { label: '刺激的', icon: '🔥', hex: '#FF4500' }
     };
 
     // effectValues → emotion percentages { joy: 0.4, shock: 0.2, ... }
