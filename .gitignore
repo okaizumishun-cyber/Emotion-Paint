@@ -1,0 +1,6 @@
+node_modules/
+.claude/
+firebase-debug.log
+.DS_Store
+# Windows用の特殊なゴミファイルを除外
+nul

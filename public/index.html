@@ -1,0 +1,3624 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emotion Paint - Floating Icons</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      background: #f8f8f8;
+      color: #333;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    #header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      background: transparent;
+      height: 44px;
+      z-index: 1000;
+    }
+
+    #header h1 {
+      display: none;
+    }
+
+    .badge {
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .badge-controller {
+      background: #FF3ED4;
+      color: #fff;
+      border-radius: 8px;
+    }
+
+    .badge-viewer {
+      background: #fff;
+      border: 1px solid #FF3ED4;
+      color: #FF3ED4;
+    }
+
+    /* Top right action buttons */
+    #top-actions {
+      position: fixed;
+      top: 10px;
+      right: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 1001;
+    }
+
+    #reset-btn {
+      padding: 14px 40px;
+      border: 2px solid #FF3ED4;
+      border-radius: 12px;
+      background: #fff;
+      color: #FF3ED4;
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    #reset-btn:hover {
+      background: #fff5fa;
+    }
+
+    #save-btn {
+      padding: 14px 40px;
+      min-width: 250px;
+      border: 2px solid #FF3ED4;
+      border-radius: 12px;
+      background: #FF3ED4;
+      color: #fff;
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 62, 212, 0.4);
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    /* Top right button shared style (based on original #reset-btn) */
+    .top-action-btn {
+      padding: 14px 40px;
+      min-width: 240px;
+      /* Equalize width */
+      border: 2px solid #FF3ED4;
+      border-radius: 12px;
+      background: #fff;
+      color: #FF3ED4;
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .top-action-btn:hover {
+      background: #fff5fa;
+    }
+
+    /* Remove individual restart-btn/reset-btn definitions if they conflict or just override by not using them */
+
+
+    /* Bottom right actions */
+    #bottom-right-actions {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 1001;
+    }
+
+    #save-btn:hover {
+      background: #e835bf;
+    }
+
+    #controller-ui {
+      display: none;
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      padding-top: 44px;
+    }
+
+    #canvas-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      width: 480px;
+      height: 480px;
+    }
+
+    #paint-canvas {
+      display: block;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    #canvas-toolbar {
+      /* スライダーのコンテナ - レイアウトに影響しない */
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    #canvas-toolbar>* {
+      pointer-events: auto;
+    }
+
+    /* Mode buttons at bottom left */
+    #mode-buttons {
+      position: fixed;
+      bottom: 16px;
+      left: 16px;
+      display: flex;
+      gap: 8px;
+      z-index: 50;
+    }
+
+    .mode-btn {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      background: #fff;
+      color: #888;
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mode-btn:hover {
+      border-color: #00838f;
+      color: #00838f;
+    }
+
+    .mode-btn.active {
+      background: #e0f7fa;
+      color: #00838f;
+      border-color: #00838f;
+    }
+
+    /* ── Selection Overlays ── */
+    .selection-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f5;
+      opacity: 1;
+      transition: opacity 0.5s ease-out;
+      overflow-y: auto;
+      padding: 40px 20px;
+    }
+
+    .selection-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .selection-overlay .step-heading {
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 48px;
+      text-align: center;
+    }
+
+    /* Vase Selection */
+    #vase-select-overlay .vase-choices {
+      display: flex;
+      gap: 48px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    #vase-select-overlay .vase-choice {
+      cursor: pointer;
+      padding: 24px;
+      border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #vase-select-overlay .vase-choice:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    #vase-select-overlay .vase-choice img {
+      width: 200px;
+      height: 300px;
+      object-fit: contain;
+    }
+
+    /* Background Selection */
+    #bg-select-overlay .bg-choices {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      max-width: 1000px;
+    }
+
+    #bg-select-overlay .bg-choice {
+      cursor: pointer;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #bg-select-overlay .bg-choice:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    }
+
+    #bg-select-overlay .bg-choice img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #bg-select-overlay .bg-choice.blank {
+      border: 2px dashed #ccc;
+      background: #fff;
+    }
+
+    #bg-select-overlay .bg-choice.blank span {
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #666;
+    }
+
+    #floating-icons {
+      position: fixed;
+      top: 44px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .floating-icon {
+      position: absolute;
+      width: 90px;
+      height: 90px;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: filter 0.15s;
+      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.15));
+    }
+
+    .floating-icon:hover {
+      filter: drop-shadow(0 5px 12px rgba(0, 0, 0, 0.25));
+      z-index: 100;
+    }
+
+    .floating-icon.selected {
+      filter: drop-shadow(0 0 20px var(--icon-color));
+      z-index: 101;
+    }
+
+    .floating-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .floating-icon .icon-circle {
+      transition: stroke-width 0.15s;
+    }
+
+    .floating-icon.selected .icon-circle {
+      stroke: white;
+      stroke-width: 4;
+    }
+
+    .floating-icon .icon-text {
+      transition: transform 0.1s;
+    }
+
+    .floating-icon.clicked .icon-text {
+      animation: textShake 0.3s ease-out;
+    }
+
+    @keyframes textShake {
+
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      25% {
+        transform: translate(-2px, 0) scale(1.1);
+      }
+
+      50% {
+        transform: translate(2px, 0) scale(1.15);
+      }
+
+      75% {
+        transform: translate(-1px, 0) scale(1.05);
+      }
+    }
+
+    /* Ripple effect */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--ripple-color, rgba(255, 255, 255, 0.6));
+      pointer-events: none;
+      animation: rippleExpand 0.6s ease-out forwards;
+    }
+
+    @keyframes rippleExpand {
+      0% {
+        transform: scale(0);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(3);
+        opacity: 0;
+      }
+    }
+
+    #effect-slider-overlay {
+      display: none;
+      position: absolute;
+      top: 100%;
+      margin-top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      border: 2px solid var(--slider-color, #FF3ED4);
+      border-radius: 12px;
+      padding: 16px 24px;
+      min-width: 280px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      z-index: 60;
+    }
+
+    #effect-slider-overlay.visible {
+      display: block;
+    }
+
+    #effect-slider-overlay .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    #effect-slider-overlay .slider-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--slider-color, #FF3ED4);
+    }
+
+    #effect-slider-overlay .slider-value {
+      font-size: 14px;
+      color: #888;
+    }
+
+    #effect-slider-overlay input[type="range"] {
+      width: 100%;
+      height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #e0e0e0;
+      border-radius: 3px;
+      outline: none;
+    }
+
+    #effect-slider-overlay input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--slider-color, #FF3ED4);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+
+    #viewer-ui {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      padding-top: 44px;
+      background: #1a1a1a;
+      transition: background 0.5s;
+    }
+
+    #viewer-ui.light-mode {
+      background: #f0f0f0;
+    }
+
+    #viewer-ui canvas {
+      display: block;
+    }
+
+    /* Theme toggle button */
+    #theme-toggle {
+      position: fixed;
+      top: 54px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 11px;
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      cursor: pointer;
+      z-index: 100;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #theme-toggle:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    #viewer-ui.light-mode #theme-toggle {
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    #viewer-ui.light-mode #theme-toggle:hover {
+      background: rgba(255, 255, 255, 1);
+    }
+
+    .theme-icon {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    /* ── Firing Overlay (Viewer) ── */
+    #firing-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+    }
+
+    #firing-overlay.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #firing-overlay .firing-text {
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: #fff;
+      text-shadow: 0 0 40px #ff4400, 0 0 80px #ff2200;
+      animation: firingPulse 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes firingPulse {
+      0% {
+        text-shadow: 0 0 20px #ff4400, 0 0 40px #ff2200;
+        opacity: 0.8;
+      }
+
+      100% {
+        text-shadow: 0 0 60px #ff6600, 0 0 120px #ff4400;
+        opacity: 1;
+      }
+    }
+
+    #firing-overlay .firing-sub {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 16px;
+    }
+
+    /* ── Save Progress (Controller) ── */
+    #save-progress-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+    }
+
+    #save-progress-overlay.active {
+      display: flex;
+    }
+
+    #save-progress-overlay .progress-box {
+      background: #fff;
+      border-radius: 24px;
+      padding: 40px 48px;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .progress-spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #eee;
+      border-top: 4px solid #FF3ED4;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 24px auto 16px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── QR Code Popup ── */
+    #qr-popup {
+      position: fixed;
+      inset: 0;
+      z-index: 4000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+    }
+
+    #qr-popup.active {
+      display: flex;
+    }
+
+    #qr-popup .qr-box {
+      background: #fff;
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 12px 60px rgba(0, 0, 0, 0.3);
+      max-width: 420px;
+      width: 90%;
+    }
+
+    #qr-popup .qr-title {
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    #qr-popup .qr-sub {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 24px;
+    }
+
+    #qr-popup #qr-canvas-container {
+      margin: 0 auto 24px;
+    }
+
+    #qr-popup .qr-close-btn {
+      padding: 12px 40px;
+      border: 2px solid #FF3ED4;
+      border-radius: 12px;
+      background: #FF3ED4;
+      color: #fff;
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ── Gallery Mode ── */
+    #gallery-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2500;
+      display: none;
+      background: #111;
+      overflow: hidden;
+    }
+
+    #gallery-overlay.active {
+      display: block;
+    }
+
+    #gallery-overlay .gallery-title {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 4px;
+      z-index: 10;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      padding: 80px 40px 40px;
+      max-height: 100vh;
+      overflow-y: auto;
+    }
+
+    .gallery-item {
+      border-radius: 12px;
+      overflow: hidden;
+      background: #222;
+      cursor: pointer;
+      transition: transform 0.3s;
+      aspect-ratio: 1;
+    }
+
+    .gallery-item:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255, 62, 212, 0.3);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ── Sign Overlay (Controller) ── */
+    #sign-overlay {
+      position: fixed; inset: 0; z-index: 3500;
+      display: none; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+    }
+    #sign-overlay.active { display: flex; }
+    #sign-overlay .sign-box {
+      background: #fff; border-radius: 24px; padding: 32px;
+      text-align: center; box-shadow: 0 12px 60px rgba(0,0,0,0.3);
+      max-width: 420px; width: 90%;
+    }
+    #sign-overlay .sign-title {
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 22px; font-weight: 700; color: #333; margin-bottom: 16px;
+    }
+    #sign-canvas {
+      width: 100%; aspect-ratio: 3/1;
+      border: 2px solid #ddd; border-radius: 12px;
+      cursor: crosshair; touch-action: none; background: #fafafa;
+    }
+    #sign-overlay .sign-actions {
+      display: flex; gap: 12px; margin-top: 16px; justify-content: center;
+    }
+    #sign-overlay .sign-btn {
+      padding: 10px 28px; border-radius: 10px;
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      font-size: 15px; font-weight: 700; cursor: pointer; border: none;
+    }
+    .sign-btn-clear { background: #eee; color: #666; }
+    .sign-btn-done { background: #FF3ED4; color: #fff; }
+
+    /* ── Mobile Gallery (Instagram-style) ── */
+    #ar-viewer-ui {
+      display: none; width: 100vw; min-height: 100vh;
+      background: #fff; flex-direction: column;
+      overflow-y: auto; overflow-x: hidden;
+    }
+    /* Header */
+    .ig-header {
+      position: sticky; top: 0; z-index: 100;
+      background: #fff; border-bottom: 1px solid #dbdbdb;
+      padding: 12px 16px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ig-header-title {
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 18px; font-weight: 700; color: #262626;
+    }
+    /* Profile area */
+    .ig-profile {
+      padding: 20px 16px; display: flex; align-items: center; gap: 24px;
+      border-bottom: 1px solid #dbdbdb;
+    }
+    .ig-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      border: 3px solid #FF3ED4; padding: 3px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; overflow: hidden; background: #fafafa;
+    }
+    .ig-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .ig-stats {
+      display: flex; gap: 24px; flex: 1; justify-content: center;
+    }
+    .ig-stat { text-align: center; }
+    .ig-stat-num {
+      font-size: 18px; font-weight: 700; color: #262626; display: block;
+    }
+    .ig-stat-label { font-size: 12px; color: #8e8e8e; }
+    /* Featured work (currently viewed) */
+    .ig-featured {
+      padding: 0; border-bottom: 1px solid #dbdbdb;
+    }
+    .ig-featured-wrap {
+      width: 100%; aspect-ratio: 4/5; background: #1a1a1a;
+      position: relative; overflow: hidden;
+    }
+    .ig-featured-wrap canvas { width: 100% !important; height: 100% !important; }
+    .ig-featured-info {
+      padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .ig-featured-author {
+      font-size: 14px; font-weight: 600; color: #262626;
+    }
+    .ig-featured-actions { display: flex; gap: 12px; }
+    .ig-action-btn {
+      padding: 8px 16px; border-radius: 8px;
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      border: 1px solid #dbdbdb; background: #fff; color: #262626;
+    }
+    .ig-action-btn.primary {
+      background: #0095f6; color: #fff; border-color: #0095f6;
+    }
+    /* Grid section */
+    .ig-grid-header {
+      padding: 12px 16px; border-bottom: 1px solid #dbdbdb;
+      display: flex; justify-content: center;
+    }
+    .ig-grid-tab {
+      font-size: 12px; font-weight: 600; color: #262626;
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 8px 0; border-top: 2px solid #262626;
+    }
+    .ig-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 2px; padding: 2px;
+    }
+    .ig-grid-item {
+      aspect-ratio: 4/5; overflow: hidden; cursor: pointer;
+      position: relative; background: #fafafa;
+    }
+    .ig-grid-item img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: opacity 0.2s;
+    }
+    .ig-grid-item:active img { opacity: 0.7; }
+    .ig-grid-item .grid-sign {
+      position: absolute; bottom: 4px; right: 6px;
+      font-size: 10px; color: rgba(255,255,255,0.8);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    }
+    /* Detail modal */
+    #ig-detail-modal {
+      position: fixed; inset: 0; z-index: 5000;
+      display: none; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.85);
+    }
+    #ig-detail-modal.active { display: flex; }
+    .ig-detail-box {
+      background: #fff; border-radius: 12px; overflow: hidden;
+      max-width: 480px; width: 95%;
+    }
+    .ig-detail-video {
+      width: 100%; aspect-ratio: 4/5; background: #1a1a1a;
+      position: relative; overflow: hidden;
+    }
+    .ig-detail-video canvas { width: 100% !important; height: 100% !important; }
+    .ig-detail-info {
+      padding: 14px 16px;
+    }
+    .ig-detail-author { font-size: 14px; font-weight: 600; color: #262626; }
+    .ig-detail-actions {
+      display: flex; gap: 8px; margin-top: 10px;
+    }
+    .ig-detail-close {
+      position: absolute; top: 16px; right: 16px;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(0,0,0,0.6); color: #fff; border: none;
+      font-size: 18px; cursor: pointer; z-index: 10;
+    }
+
+    /* ── Emotion Bar (shared) ── */
+    .emotion-bar {
+      display: flex; height: 8px; border-radius: 4px; overflow: hidden;
+      width: 100%; background: #eee;
+    }
+    .emotion-bar-segment {
+      height: 100%; transition: width 0.4s ease;
+    }
+    .emotion-label-row {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      justify-content: center; margin-top: 6px;
+    }
+    .emotion-label {
+      display: flex; align-items: center; gap: 3px;
+      font-size: 11px; color: #555;
+    }
+    .emotion-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+
+    /* ── QR Popup emotion section ── */
+    .qr-emotion-section {
+      margin: 16px 0 20px; text-align: left;
+    }
+    .qr-emotion-title {
+      font-size: 13px; font-weight: 600; color: #555;
+      margin-bottom: 8px; text-align: center;
+    }
+
+    /* ── Mobile Gallery emotion ── */
+    .ig-emotion-summary {
+      padding: 0 16px 12px; border-bottom: 1px solid #dbdbdb;
+    }
+    .ig-emotion-summary .emotion-bar { height: 10px; border-radius: 5px; }
+    .ig-featured-emotion {
+      padding: 8px 16px 12px;
+    }
+    .ig-grid-item.has-emotion {
+      border-bottom: 4px solid var(--emotion-color, transparent);
+    }
+    .ig-detail-emotion {
+      padding: 8px 16px 4px;
+    }
+  </style>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+  <!-- QR Code Library (browser-compatible) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+</head>
+
+<body>
+
+  <div id="header">
+    <h1>// FLOATING_EMOTION</h1>
+
+  </div>
+
+  <div id="controller-ui">
+    <!-- Step 1: Vase Selection Overlay -->
+    <div id="vase-select-overlay" class="selection-overlay">
+      <h2 class="step-heading">1.<ruby>壺<rt>つぼ</rt></ruby>を<ruby>選<rt>えら</rt></ruby>んでください。</h2>
+      <div class="vase-choices">
+        <div class="vase-choice" data-vase="vaseA">
+          <img src="/VASE/vae01.png" alt="壺A">
+        </div>
+        <div class="vase-choice" data-vase="vaseB">
+          <img src="/VASE/vase02.png" alt="壺B">
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Background Selection Overlay -->
+    <div id="bg-select-overlay" class="selection-overlay hidden">
+      <h2 class="step-heading">2.<ruby>好<rt>す</rt></ruby>きな<ruby>絵<rt>え</rt></ruby>を<ruby>選<rt>えら</rt></ruby>んでください。
+      </h2>
+      <div class="bg-choices">
+        <div class="bg-choice" data-bg="background01.png">
+          <img src="/backgrounds/background01.png" alt="背景1">
+        </div>
+        <div class="bg-choice" data-bg="background02  .png">
+          <img src="/backgrounds/background02  .png" alt="背景2">
+        </div>
+        <div class="bg-choice" data-bg="background03.png">
+          <img src="/backgrounds/background03.png" alt="背景3">
+        </div>
+        <div class="bg-choice" data-bg="background04.png">
+          <img src="/backgrounds/background04.png" alt="背景4">
+        </div>
+        <div class="bg-choice" data-bg="background05.png">
+          <img src="/backgrounds/background05.png" alt="背景5">
+        </div>
+        <div class="bg-choice" data-bg="background06.png">
+          <img src="/backgrounds/background06.png" alt="背景6">
+        </div>
+        <div class="bg-choice" data-bg="background07.png">
+          <img src="/backgrounds/background07.png" alt="背景7">
+        </div>
+        <div class="bg-choice blank" data-bg="blank">
+          <span>白紙</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top right action buttons -->
+    <!-- Top right action buttons: Start Over & Clear -->
+    <div id="top-actions">
+      <button id="change-vase-btn" class="top-action-btn">「つぼ」をかえる</button>
+      <button id="change-bg-btn" class="top-action-btn">「え」をかえる</button>
+    </div>
+
+    <!-- Bottom right action: Save -->
+    <div id="bottom-right-actions">
+      <button id="save-btn">「ほぞん」する</button>
+    </div>
+
+    <div id="floating-icons"></div>
+    <div id="canvas-container">
+      <canvas id="paint-canvas" width="480" height="480"></canvas>
+      <div id="canvas-toolbar">
+        <div id="effect-slider-overlay">
+          <div class="slider-header">
+            <span class="slider-title" id="slider-effect-name">Effect</span>
+            <span class="slider-value" id="slider-value-display">0%</span>
+          </div>
+          <input type="range" id="effect-range" min="0" max="100" value="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode buttons at bottom left -->
+    <div id="mode-buttons">
+      <button class="mode-btn" data-mode="displacement">Displacement</button>
+      <button class="mode-btn" data-mode="parallax">Parallax</button>
+      <button class="mode-btn active" data-mode="bump">Bump/Normal</button>
+    </div>
+
+    <!-- Save Progress Overlay -->
+    <div id="save-progress-overlay">
+      <div class="progress-box">
+        <div class="progress-spinner"></div>
+        <div class="progress-text" id="save-status-text">焼き上げ中...</div>
+      </div>
+    </div>
+
+    <!-- Sign Overlay (appears after save, before QR) -->
+    <div id="sign-overlay">
+      <div class="sign-box">
+        <div class="sign-title">サインをかいてください</div>
+        <canvas id="sign-canvas" width="600" height="200"></canvas>
+        <div class="sign-actions">
+          <button class="sign-btn sign-btn-clear" id="sign-clear-btn">けす</button>
+          <button class="sign-btn sign-btn-done" id="sign-done-btn">かんせい！</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR Code Popup -->
+    <div id="qr-popup">
+      <div class="qr-box">
+        <div class="qr-title">作品を持ち帰ろう</div>
+        <div class="qr-sub">スマホでQRコードを読み取ってください</div>
+        <div id="qr-canvas-container"></div>
+        <div class="qr-emotion-section" id="qr-emotion-section">
+          <div class="qr-emotion-title">あなたの感情</div>
+          <div class="emotion-bar" id="qr-emotion-bar"></div>
+          <div class="emotion-label-row" id="qr-emotion-labels"></div>
+        </div>
+        <button class="qr-close-btn" id="qr-close-btn">とじる</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="viewer-ui">
+    <button id="theme-toggle"><span class="theme-icon">☀️</span> Light</button>
+    <!-- Firing Overlay -->
+    <div id="firing-overlay">
+      <div class="firing-text" id="firing-text">焼き上げ中...</div>
+      <div class="firing-sub" id="firing-sub">壺を窯で焼いています</div>
+    </div>
+    <!-- Gallery Overlay -->
+    <div id="gallery-overlay">
+      <div class="gallery-title">GALLERY</div>
+      <div class="gallery-grid" id="gallery-grid"></div>
+    </div>
+  </div>
+
+  <!-- Mobile Gallery (Instagram-style, for ?workId=XXX) -->
+  <div id="ar-viewer-ui">
+    <div class="ig-header">
+      <span class="ig-header-title">SOTUTEN GALLERY</span>
+    </div>
+    <div class="ig-profile">
+      <div class="ig-avatar">
+        <img src="/VASE/vae01.png" alt="avatar" id="ig-avatar-img">
+      </div>
+      <div class="ig-stats">
+        <div class="ig-stat">
+          <span class="ig-stat-num" id="ig-works-count">0</span>
+          <span class="ig-stat-label">作品</span>
+        </div>
+        <div class="ig-stat">
+          <span class="ig-stat-num" id="ig-artists-count">0</span>
+          <span class="ig-stat-label">参加者</span>
+        </div>
+      </div>
+    </div>
+    <!-- All works emotion summary -->
+    <div class="ig-emotion-summary" id="ig-emotion-summary">
+      <div class="qr-emotion-title">みんなの感情</div>
+      <div class="emotion-bar" id="ig-all-emotion-bar"></div>
+      <div class="emotion-label-row" id="ig-all-emotion-labels"></div>
+    </div>
+    <!-- Featured work (3D viewer) -->
+    <div class="ig-featured" id="ig-featured" style="display:none;">
+      <div class="ig-featured-wrap" id="ig-featured-wrap"></div>
+      <div class="ig-featured-info">
+        <span class="ig-featured-author" id="ig-featured-author"></span>
+        <div class="ig-featured-actions">
+          <button class="ig-action-btn primary" id="ig-download-btn">保存</button>
+        </div>
+      </div>
+      <!-- Featured work emotion breakdown -->
+      <div class="ig-featured-emotion" id="ig-featured-emotion">
+        <div class="emotion-bar" id="ig-featured-emotion-bar"></div>
+        <div class="emotion-label-row" id="ig-featured-emotion-labels"></div>
+      </div>
+    </div>
+    <!-- Grid tabs -->
+    <div class="ig-grid-header">
+      <span class="ig-grid-tab">すべての作品</span>
+    </div>
+    <!-- Grid of all works -->
+    <div class="ig-grid" id="ig-grid"></div>
+    <!-- Detail modal -->
+    <div id="ig-detail-modal">
+      <button class="ig-detail-close" id="ig-detail-close">&times;</button>
+      <div class="ig-detail-box">
+        <div class="ig-detail-video" id="ig-detail-video"></div>
+        <div class="ig-detail-info">
+          <div class="ig-detail-author" id="ig-detail-author"></div>
+          <div class="ig-detail-emotion" id="ig-detail-emotion">
+            <div class="emotion-bar" id="ig-detail-emotion-bar"></div>
+            <div class="emotion-label-row" id="ig-detail-emotion-labels"></div>
+          </div>
+          <div class="ig-detail-actions">
+            <button class="ig-action-btn primary" id="ig-detail-download">保存する</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
+  <script>
+    // ══════════════════════════════════════════════════════════════
+    //  Firebase Configuration
+    //  ※ 以下のfirebaseConfigを自分のFirebaseプロジェクトの値に置き換えてください
+    // ══════════════════════════════════════════════════════════════
+    const firebaseConfig = {
+      apiKey: "AIzaSyB3k-gI2vXLgZoCO5oFSV3lHg92Q1RaY8U",
+      authDomain: "sotuten-32fea.firebaseapp.com",
+      projectId: "sotuten-32fea",
+      storageBucket: "sotuten-32fea.firebasestorage.app",
+      messagingSenderId: "599225549831",
+      appId: "1:599225549831:web:440908a71b07b684ef16a2",
+      measurementId: "G-DKBPMXE0D6"
+    };
+
+    let db = null, auth = null, storage = null;
+    let firebaseReady = false;
+    const appId = firebaseConfig.projectId || 'default';
+
+    // Firebase初期化（SDKが読み込まれている場合のみ）
+    if (typeof firebase !== 'undefined' && firebaseConfig.apiKey !== 'YOUR_API_KEY') {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      auth = firebase.auth();
+      storage = firebase.storage();
+      auth.signInAnonymously().then(() => {
+        firebaseReady = true;
+        console.log('Firebase ready (anonymous auth)');
+      }).catch(e => console.warn('Firebase auth failed:', e));
+    } else {
+      console.warn('Firebase not configured - gallery/save features disabled. Set firebaseConfig to enable.');
+    }
+
+    const GALLERY_PATH = `artifacts/${appId}/public/data/gallery`;
+
+    const params = new URLSearchParams(location.search);
+    const workId = params.get('workId');
+    const role = workId ? 'arViewer' : (params.get('role') || 'viewer');
+
+    // Robust Socket.io with auto-reconnect
+    const socket = io({
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000
+    });
+
+    socket.on('connect', () => console.log('Connected'));
+    socket.on('disconnect', () => console.log('Disconnected, reconnecting...'));
+    socket.on('reconnect', (attempt) => console.log('Reconnected after', attempt, 'attempts'));
+
+    const TEX_W = 480, TEX_H = 480;
+
+    // ══════════════════════════════════════════════════════════════
+    //  Pottery Shape Data (from Vase Studio PRO exports)
+    // ══════════════════════════════════════════════════════════════
+    const potteryShapes = {
+      vaseA: [
+        { r: 0.4, h: 0 },
+        { r: 0.4833334, h: 0.777778 },
+        { r: 0.6833334, h: 1.577778 },
+        { r: 0.3722222, h: 1.9 },
+        { r: 0.3944444, h: 2.188889 }
+      ],
+      vaseB: [
+        { r: 0.4722222, h: 0.011111 },
+        { r: 0.4944444, h: 0.477778 },
+        { r: 0.4833334, h: 1.3 },
+        { r: 0.4833334, h: 1.622222 },
+        { r: 0.4611111, h: 1.833333 }
+      ]
+    };
+
+    // Emotion colors mapping
+    const EMOTION_COLORS = {
+      joy: { r: 1, g: 0.84, b: 0, hex: '#FFD700' },
+      shock: { r: 1, g: 0.55, b: 0, hex: '#FF8C00' },
+      sad: { r: 0.27, g: 0.51, b: 0.71, hex: '#4682B4' },
+      confuse: { r: 0.58, g: 0.44, b: 0.86, hex: '#9370DB' },
+      fire: { r: 1, g: 0.27, b: 0, hex: '#FF4500' }
+    };
+
+    const TOOLS = [
+      { id: 'pop', type: 'pen', emotion: 'joy', color: '#FFD700', text: 'ポコポコ' },
+      { id: 'rainbow', type: 'pen', emotion: 'joy', color: '#FFD700', text: 'キラキラ' },
+      { id: 'lava', type: 'pen', emotion: 'joy', color: '#FFD700', text: 'ドロドロ' },
+      { id: 'melt', type: 'effect', emotion: 'joy', color: '#FFD700', text: 'トローリ' },
+      { id: 'tiltshift', type: 'effect', emotion: 'joy', color: '#FFD700', text: 'フワフワ' },
+      { id: 'glitch', type: 'pen', emotion: 'shock', color: '#FF8C00', text: 'ピリピリ' },
+      { id: 'lightning', type: 'pen', emotion: 'shock', color: '#FF8C00', text: 'バリバリ' },
+      { id: 'mosh', type: 'pen', emotion: 'shock', color: '#FF8C00', text: 'バキバキ' },
+      { id: 'badtv', type: 'effect', emotion: 'shock', color: '#FF8C00', text: 'ガタガタ' },
+      { id: 'edge', type: 'effect', emotion: 'shock', color: '#FF8C00', text: 'ピカッ' },
+      { id: 'drip', type: 'pen', emotion: 'sad', color: '#4682B4', text: 'シトシト' },
+      { id: 'blur', type: 'pen', emotion: 'sad', color: '#4682B4', text: 'ボヤー' },
+      { id: 'fade', type: 'pen', emotion: 'sad', color: '#4682B4', text: 'スウー' },
+      { id: 'slices', type: 'effect', emotion: 'sad', color: '#4682B4', text: 'ギザギザ' },
+      { id: 'vignette', type: 'effect', emotion: 'sad', color: '#4682B4', text: 'ドップリ' },
+      { id: 'spiral', type: 'pen', emotion: 'confuse', color: '#9370DB', text: 'グルグル' },
+      { id: 'mirror', type: 'pen', emotion: 'confuse', color: '#9370DB', text: 'アベコベ' },
+      { id: 'warp', type: 'pen', emotion: 'confuse', color: '#9370DB', text: 'グニャリ' },
+      { id: 'wobble', type: 'effect', emotion: 'confuse', color: '#9370DB', text: 'ウネウネ' },
+      { id: 'polar', type: 'effect', emotion: 'confuse', color: '#9370DB', text: 'カクカク' },
+      { id: 'trail', type: 'pen', emotion: 'fire', color: '#FF4500', text: 'シュッ' },
+      { id: 'neon', type: 'pen', emotion: 'fire', color: '#FF4500', text: 'ピカピカ' },
+      { id: 'shard', type: 'pen', emotion: 'fire', color: '#FF4500', text: 'キリリ' },
+      { id: 'smear', type: 'effect', emotion: 'fire', color: '#FF4500', text: 'ヌルリ' },
+      { id: 'dot', type: 'effect', emotion: 'fire', color: '#FF4500', text: 'ツブツブ' }
+    ];
+
+    // ══════════════════════════════════════════════════════════════
+    //  Emotion Utilities (shared across all roles)
+    // ══════════════════════════════════════════════════════════════
+    const EMOTION_META = {
+      joy:     { label: '楽しい', icon: '🌟', hex: '#FFD700' },
+      shock:   { label: '驚き',   icon: '⚡',  hex: '#FF8C00' },
+      sad:     { label: '切ない', icon: '💧', hex: '#4682B4' },
+      confuse: { label: '混乱',   icon: '🌀', hex: '#9370DB' },
+      fire:    { label: '刺激的', icon: '🔥', hex: '#FF4500' }
+    };
+
+    // effectValues → emotion percentages { joy: 0.4, shock: 0.2, ... }
+    function calcEmotionFromEffects(effectValues) {
+      const emotionTotals = { joy: 0, shock: 0, sad: 0, confuse: 0, fire: 0 };
+      if (!effectValues) return emotionTotals;
+      TOOLS.filter(t => t.type === 'effect').forEach(t => {
+        const val = effectValues[t.id] || 0;
+        emotionTotals[t.emotion] += val;
+      });
+      const sum = Object.values(emotionTotals).reduce((a, b) => a + b, 0);
+      if (sum === 0) {
+        // equal distribution if nothing was used
+        Object.keys(emotionTotals).forEach(k => emotionTotals[k] = 0.2);
+      } else {
+        Object.keys(emotionTotals).forEach(k => emotionTotals[k] /= sum);
+      }
+      return emotionTotals;
+    }
+
+    // Get dominant emotion from effectValues
+    function getDominantEmotion(effectValues) {
+      const emotions = calcEmotionFromEffects(effectValues);
+      let max = 0, dominant = 'joy';
+      Object.entries(emotions).forEach(([k, v]) => {
+        if (v > max) { max = v; dominant = k; }
+      });
+      return dominant;
+    }
+
+    // Render emotion bar + labels into containers
+    function renderEmotionBar(barEl, labelsEl, emotionPercentages) {
+      barEl.innerHTML = '';
+      labelsEl.innerHTML = '';
+      Object.entries(emotionPercentages).forEach(([emotion, pct]) => {
+        if (pct <= 0) return;
+        const seg = document.createElement('div');
+        seg.className = 'emotion-bar-segment';
+        seg.style.width = (pct * 100) + '%';
+        seg.style.background = EMOTION_META[emotion].hex;
+        barEl.appendChild(seg);
+
+        const label = document.createElement('span');
+        label.className = 'emotion-label';
+        label.innerHTML = `<span class="emotion-dot" style="background:${EMOTION_META[emotion].hex}"></span>${EMOTION_META[emotion].icon} ${Math.round(pct * 100)}%`;
+        labelsEl.appendChild(label);
+      });
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  CONTROLLER
+    // ══════════════════════════════════════════════════════════════
+    if (role === 'controller') {
+      document.getElementById('controller-ui').style.display = 'block';
+
+      const canvas = document.getElementById('paint-canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, TEX_W, TEX_H);
+
+      let currentTool = TOOLS[0];
+      let currentMode = 'bump'; // Default to Bump/Normal
+      let currentVaseShape = null; // Set by overlay selection
+      let selectedBackground = null; // Selected background file (null = blank)
+      let drawing = false, lastX = 0, lastY = 0;
+
+      const effectValues = {};
+      TOOLS.filter(t => t.type === 'effect').forEach(t => effectValues[t.id] = 0);
+
+      // Canvas bounds for icon avoidance
+      const canvasRect = { x: 0, y: 0, w: 480, h: 480, padding: 60 };
+
+      function updateCanvasRect() {
+        const container = document.getElementById('canvas-container');
+        const rect = container.getBoundingClientRect();
+        canvasRect.x = rect.left - canvasRect.padding;
+        canvasRect.y = rect.top - canvasRect.padding;
+        canvasRect.w = rect.width + canvasRect.padding * 2;
+        canvasRect.h = rect.height + canvasRect.padding * 2;
+      }
+      setTimeout(updateCanvasRect, 100);
+      window.addEventListener('resize', updateCanvasRect);
+
+      // ══════════════════════════════════════
+      //  Selection Flow: Vase -> Background -> Main UI
+      // ══════════════════════════════════════
+      const vaseOverlay = document.getElementById('vase-select-overlay');
+      const bgOverlay = document.getElementById('bg-select-overlay');
+
+      // Step 1: Vase Selection
+      document.querySelectorAll('.vase-choice').forEach(choice => {
+        choice.addEventListener('click', () => {
+          const shape = choice.dataset.vase;
+          currentVaseShape = shape;
+
+          // Update toolbar button state
+          document.querySelectorAll('.vase-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.vase === shape);
+          });
+
+          // Emit to viewer
+          socket.emit('vaseShape', currentVaseShape);
+
+          // Transition to background selection
+          vaseOverlay.classList.add('hidden');
+          setTimeout(() => {
+            vaseOverlay.style.display = 'none';
+            bgOverlay.classList.remove('hidden');
+          }, 500);
+        });
+      });
+
+      // Step 2: Background Selection
+      document.querySelectorAll('.bg-choice').forEach(choice => {
+        choice.addEventListener('click', () => {
+          const bgFile = choice.dataset.bg;
+
+          // Store selected background
+          selectedBackground = (bgFile === 'blank') ? null : bgFile;
+
+          if (bgFile === 'blank') {
+            // White canvas
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, TEX_W, TEX_H);
+            sendCanvas();
+          } else {
+            // Load background image to canvas
+            const bgImg = new Image();
+            bgImg.onload = () => {
+              ctx.drawImage(bgImg, 0, 0, TEX_W, TEX_H);
+              sendCanvas();
+            };
+            bgImg.src = '/backgrounds/' + bgFile;
+          }
+
+          // Dismiss background overlay and show main UI
+          bgOverlay.classList.add('hidden');
+          setTimeout(() => bgOverlay.style.display = 'none', 500);
+        });
+      });
+
+      // 3D Mode Buttons (now in #mode-buttons container)
+      document.querySelectorAll('#mode-buttons .mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentMode = btn.dataset.mode;
+          document.querySelectorAll('#mode-buttons .mode-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          sendCanvas();
+        });
+      });
+
+      // Start Over button (Restart)
+      // Change Vase button (Reload)
+      document.getElementById('change-vase-btn').addEventListener('click', () => {
+        if (confirm('「つぼ」をかえますか？（これまでの作業は失われます）')) {
+          location.reload();
+        }
+      });
+
+      // Change Picture button (Back to Background Select)
+      document.getElementById('change-bg-btn').addEventListener('click', () => {
+        if (confirm('「え」をかえますか？（かいた絵は消えます）')) {
+          // Clear effects and canvas first
+          clearAll();
+          // Show background overlay again
+          const bgOverlay = document.getElementById('bg-select-overlay');
+          bgOverlay.style.display = 'flex'; // Make sure display is flex
+          bgOverlay.classList.remove('hidden');
+        }
+      });
+
+      // ══════════════════════════════════════
+      //  Floating Icons with Physics
+      // ══════════════════════════════════════
+      const floatingContainer = document.getElementById('floating-icons');
+      const iconElements = [];
+      const iconStates = [];
+
+      function createFloatingIcon(tool, index) {
+        const div = document.createElement('div');
+        div.className = 'floating-icon';
+        div.dataset.toolId = tool.id;
+        div.style.setProperty('--icon-color', tool.color);
+
+        div.innerHTML = `
+      <svg viewBox="0 0 100 100">
+        <circle class="icon-circle" cx="50" cy="50" r="45" fill="${tool.color}" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+        <text class="icon-text" x="50" y="58" font-size="16" text-anchor="middle" fill="white" font-weight="bold" style="font-family: 'M PLUS Rounded 1c', sans-serif;">${tool.text}</text>
+      </svg>
+    `;
+
+        // Initial position (will be updated by animation)
+        const state = {
+          scale: 1,
+          targetScale: 1
+        };
+        iconStates.push(state);
+
+        div.addEventListener('click', (e) => {
+          // Ripple effect
+          const ripple = document.createElement('div');
+          ripple.className = 'ripple';
+          ripple.style.setProperty('--ripple-color', tool.color + '80');
+          ripple.style.width = '70px';
+          ripple.style.height = '70px';
+          ripple.style.left = '0';
+          ripple.style.top = '0';
+          div.appendChild(ripple);
+          setTimeout(() => ripple.remove(), 600);
+
+          // Text shake
+          div.classList.add('clicked');
+          setTimeout(() => div.classList.remove('clicked'), 300);
+
+          selectTool(tool, div, index);
+        });
+
+        floatingContainer.appendChild(div);
+        iconElements.push(div);
+        return div;
+      }
+
+      TOOLS.forEach((tool, i) => createFloatingIcon(tool, i));
+      selectTool(TOOLS[0], iconElements[0], 0);
+
+      function selectTool(tool, element, index) {
+        currentTool = tool;
+
+        iconElements.forEach((el, i) => {
+          el.classList.remove('selected');
+          iconStates[i].targetScale = 1;
+        });
+        element.classList.add('selected');
+        iconStates[index].targetScale = 1.2;
+
+        const overlay = document.getElementById('effect-slider-overlay');
+        if (tool.type === 'effect') {
+          overlay.style.setProperty('--slider-color', tool.color);
+          document.getElementById('slider-effect-name').textContent = tool.text;
+          document.getElementById('effect-range').value = effectValues[tool.id] * 100;
+          document.getElementById('slider-value-display').textContent = Math.round(effectValues[tool.id] * 100) + '%';
+          overlay.classList.add('visible');
+        } else {
+          overlay.classList.remove('visible');
+        }
+
+        const specialPens = ['lava', 'mosh', 'warp', 'fade'];
+        canvas.style.cursor = specialPens.includes(tool.id) ? 'grab' : 'crosshair';
+      }
+
+      document.getElementById('effect-range').addEventListener('input', (e) => {
+        const val = e.target.value / 100;
+        effectValues[currentTool.id] = val;
+        document.getElementById('slider-value-display').textContent = Math.round(val * 100) + '%';
+        emitEffects();
+      });
+
+      function emitEffects() {
+        socket.emit('emotion', effectValues);
+      }
+
+      function clearAll() {
+        // Reset effects
+        TOOLS.filter(t => t.type === 'effect').forEach(t => effectValues[t.id] = 0);
+        if (currentTool.type === 'effect') {
+          document.getElementById('effect-range').value = 0;
+          document.getElementById('slider-value-display').textContent = '0%';
+        }
+        emitEffects();
+
+        // Restore to selected background
+        if (selectedBackground) {
+          const bgImg = new Image();
+          bgImg.onload = () => {
+            ctx.drawImage(bgImg, 0, 0, TEX_W, TEX_H);
+            sendCanvas();
+          };
+          bgImg.src = '/backgrounds/' + selectedBackground;
+        } else {
+          // White canvas (blank was selected)
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, TEX_W, TEX_H);
+          sendCanvas();
+        }
+      }
+
+      // ══════════════════════════════════════
+      //  操作UI 角丸長方形軌道アニメーション
+      // ══════════════════════════════════════
+      const ORBIT_SPEED = 0.00002// 進捗(0.0~1.0)/ミリ秒
+      const ICON_SIZE = 90;
+      const CANVAS_SIZE = 480;
+      const ICON_MARGIN = 30; // アイコンとキャンバス間のマージン
+
+      // 軌道パラメータ
+      let orbitPath = { cx: 0, cy: 0, segments: [], totalLength: 0 };
+      let orbitStartTime = null;
+
+      function calculateOrbitParams() {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        // 画面端からのマージン (アイコン半径 + 余白40x)
+        // これにより最大サイズで画面いっぱいに広がる
+        const edgeMargin = ICON_SIZE + 30 / 2 + 10;
+
+        const pathW = w - edgeMargin * 2 - 200;
+        const pathH = h - edgeMargin * 2;
+
+        // 角丸の半径 (短辺の20%程度)
+        const r = Math.min(pathW, pathH) * 0.2;
+
+        // 軌道中心
+        const cx = w / 2;
+        const cy = h / 2 - 50
+
+        // セグメント定義 (上辺から時計回り)
+        const straightW = pathW - 2 * r;
+        const straightH = pathH - 2 * r;
+        const arcLen = 0.5 * Math.PI * r;
+
+        // 各セグメント: type, length, および計算に必要なパラメータ
+        const segments = [
+          // Top Line (Left to Right)
+          { type: 'line', len: straightW, startX: -straightW / 2, startY: -pathH / 2, dx: 1, dy: 0 },
+          // Top-Right Arc
+          { type: 'arc', len: arcLen, cx: straightW / 2, cy: -straightH / 2, startAngle: -Math.PI / 2, endAngle: 0, r: r },
+          // Right Line (Top to Bottom)
+          { type: 'line', len: straightH, startX: pathW / 2, startY: -straightH / 2, dx: 0, dy: 1 },
+          // Bottom-Right Arc
+          { type: 'arc', len: arcLen, cx: straightW / 2, cy: straightH / 2, startAngle: 0, endAngle: Math.PI / 2, r: r },
+          // Bottom Line (Right to Left)
+          { type: 'line', len: straightW, startX: straightW / 2, startY: pathH / 2, dx: -1, dy: 0 },
+          // Bottom-Left Arc
+          { type: 'arc', len: arcLen, cx: -straightW / 2, cy: straightH / 2, startAngle: Math.PI / 2, endAngle: Math.PI, r: r },
+          // Left Line (Bottom to Top)
+          { type: 'line', len: straightH, startX: -pathW / 2, startY: straightH / 2, dx: 0, dy: -1 },
+          // Top-Left Arc
+          { type: 'arc', len: arcLen, cx: -straightW / 2, cy: -straightH / 2, startAngle: Math.PI, endAngle: Math.PI * 1.5, r: r }
+        ];
+
+        let currentDist = 0;
+        segments.forEach(seg => {
+          seg.startDist = currentDist;
+          currentDist += seg.len;
+        });
+
+        orbitPath = { cx, cy, segments, totalLength: currentDist };
+      }
+
+      function getPositionOnOrbit(progress) {
+        // 正規化された進捗 (0.0 ~ 1.0) を距離に変換
+        let d = (progress % 1.0);
+        if (d < 0) d += 1.0;
+        d *= orbitPath.totalLength;
+
+        // 該当するセグメントを探す
+        // (線形探索だがセグメント数8個なので十分高速)
+        for (const seg of orbitPath.segments) {
+          if (d >= seg.startDist && d < seg.startDist + seg.len) {
+            const localD = d - seg.startDist;
+
+            if (seg.type === 'line') {
+              return {
+                x: orbitPath.cx + seg.startX + seg.dx * localD,
+                y: orbitPath.cy + seg.startY + seg.dy * localD
+              };
+            } else {
+              const p = localD / seg.len; // 0.0 ~ 1.0 inside arc
+              const angle = seg.startAngle + (seg.endAngle - seg.startAngle) * p;
+              return {
+                x: orbitPath.cx + seg.cx + Math.cos(angle) * seg.r,
+                y: orbitPath.cy + seg.cy + Math.sin(angle) * seg.r
+              };
+            }
+          }
+        }
+        // Fallback (for precision issues at exactly 1.0)
+        return { x: orbitPath.cx, y: orbitPath.cy - orbitPath.segments[0].startY };
+      }
+
+      // 初期化
+      calculateOrbitParams();
+
+      function animateIcons(timestamp) {
+        if (orbitStartTime === null) {
+          orbitStartTime = timestamp;
+        }
+
+        const elapsed = timestamp - orbitStartTime;
+        const globalProgress = elapsed * ORBIT_SPEED;
+
+        const iconCount = iconElements.length;
+
+        iconElements.forEach((el, i) => {
+          const state = iconStates[i];
+
+          // 各アイコンを等間隔に配置 (周長ベース)
+          const progressOffset = i / iconCount;
+          const currentProgress = globalProgress + progressOffset;
+
+          const pos = getPositionOnOrbit(currentProgress);
+
+          // スケールアニメーション
+          state.scale += (state.targetScale - state.scale) * 0.1;
+
+          el.style.left = (pos.x - ICON_SIZE / 2) + 'px';
+          el.style.top = (pos.y - ICON_SIZE / 2) + 'px';
+          el.style.transform = `scale(${state.scale})`;
+        });
+
+        requestAnimationFrame(animateIcons);
+      }
+      requestAnimationFrame(animateIcons);
+
+      window.addEventListener('resize', () => {
+        updateCanvasRect();
+        calculateOrbitParams();
+      });
+
+      // ══════════════════════════════════════
+      //  Drawing Logic - 15 Pens
+      // ══════════════════════════════════════
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const t = e.touches ? e.touches[0] : e;
+        return {
+          x: (t.clientX - rect.left) * (TEX_W / rect.width),
+          y: (t.clientY - rect.top) * (TEX_H / rect.height)
+        };
+      }
+
+      function getPenColor() { return currentTool.color || '#000'; }
+
+      function drawPop(x, y) {
+        const shapes = ['circle', 'star', 'heart'];
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        const size = 10 + Math.random() * 20;
+        ctx.fillStyle = getPenColor();
+        ctx.beginPath();
+        if (shape === 'circle') {
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+        } else if (shape === 'star') {
+          drawStar(ctx, x, y, 5, size, size * 0.5);
+        } else {
+          drawHeart(ctx, x, y, size);
+        }
+        ctx.fill();
+      }
+
+      function drawStar(c, cx, cy, spikes, oR, iR) {
+        let rot = -Math.PI / 2, step = Math.PI / spikes;
+        c.beginPath();
+        for (let i = 0; i < spikes * 2; i++) {
+          const r = i % 2 === 0 ? oR : iR;
+          const a = rot + step * i;
+          i === 0 ? c.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r) : c.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+        }
+        c.closePath();
+      }
+
+      function drawHeart(c, x, y, size) {
+        c.beginPath();
+        c.moveTo(x, y + size * 0.3);
+        c.bezierCurveTo(x, y, x - size, y, x - size, y + size * 0.5);
+        c.bezierCurveTo(x - size, y + size, x, y + size * 1.2, x, y + size * 1.5);
+        c.bezierCurveTo(x, y + size * 1.2, x + size, y + size, x + size, y + size * 0.5);
+        c.bezierCurveTo(x + size, y, x, y, x, y + size * 0.3);
+        c.closePath();
+      }
+
+      let rainbowHue = 0;
+      function drawRainbow(x0, y0, x1, y1) {
+        rainbowHue = (rainbowHue + 5) % 360;
+        ctx.strokeStyle = `hsl(${rainbowHue}, 100%, 50%)`;
+        ctx.lineWidth = 8;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+      }
+
+      const LAVA_RES = 64;
+      const lavaVX = new Float32Array(LAVA_RES * LAVA_RES);
+      const lavaVY = new Float32Array(LAVA_RES * LAVA_RES);
+      let lavaSnapshot = null, lavaActive = false, lavaRAF = 0;
+
+      function lavaAddVel(cx, cy, vx, vy) {
+        const scale = LAVA_RES / TEX_W, lcx = cx * scale, lcy = cy * scale;
+        const radius = 8, r2 = radius * radius;
+        for (let y = Math.max(0, Math.floor(lcy - radius)); y < Math.min(LAVA_RES, Math.ceil(lcy + radius)); y++) {
+          for (let x = Math.max(0, Math.floor(lcx - radius)); x < Math.min(LAVA_RES, Math.ceil(lcx + radius)); x++) {
+            const dx = x - lcx, dy = y - lcy, d2 = dx * dx + dy * dy;
+            if (d2 > r2) continue;
+            const f = (1 - Math.sqrt(d2) / radius) * 0.5;
+            const i = y * LAVA_RES + x;
+            lavaVX[i] += vx * f;
+            lavaVY[i] += vy * f;
+          }
+        }
+      }
+
+      function lavaStep() {
+        if (!lavaActive && !lavaHasMotion()) { lavaRAF = 0; return; }
+        if (lavaSnapshot) {
+          const src = lavaSnapshot, dst = ctx.createImageData(TEX_W, TEX_H);
+          const scaleInv = TEX_W / LAVA_RES;
+          for (let y = 0; y < TEX_H; y++) {
+            for (let x = 0; x < TEX_W; x++) {
+              const lx = x / scaleInv, ly = y / scaleInv;
+              const ix = Math.min(LAVA_RES - 1, Math.floor(lx)), iy = Math.min(LAVA_RES - 1, Math.floor(ly));
+              const i = iy * LAVA_RES + ix;
+              const uvx = lavaVX[i], uvy = lavaVY[i];
+              const sx = Math.max(0, Math.min(TEX_W - 1, Math.round(x - uvx)));
+              const sy = Math.max(0, Math.min(TEX_H - 1, Math.round(y - uvy)));
+              const si = (sy * TEX_W + sx) * 4, di = (y * TEX_W + x) * 4;
+              dst.data[di] = src.data[si]; dst.data[di + 1] = src.data[si + 1];
+              dst.data[di + 2] = src.data[si + 2]; dst.data[di + 3] = src.data[si + 3];
+            }
+          }
+          ctx.putImageData(dst, 0, 0);
+          lavaSnapshot = ctx.getImageData(0, 0, TEX_W, TEX_H);
+        }
+        for (let i = 0; i < LAVA_RES * LAVA_RES; i++) { lavaVX[i] *= 0.9; lavaVY[i] *= 0.9; }
+        lavaRAF = requestAnimationFrame(lavaStep);
+      }
+
+      function lavaHasMotion() {
+        for (let i = 0; i < LAVA_RES * LAVA_RES; i++) if (Math.abs(lavaVX[i]) > 0.02 || Math.abs(lavaVY[i]) > 0.02) return true;
+        return false;
+      }
+
+      function drawGlitch(x, y) {
+        const w = 20 + Math.random() * 40, h = 4 + Math.random() * 12;
+        const imgData = ctx.getImageData(Math.max(0, x - w / 2), Math.max(0, y - h / 2), w, h);
+        ctx.putImageData(imgData, x - w / 2 + (Math.random() - 0.5) * 30, y - h / 2 + (Math.random() - 0.5) * 10);
+        ctx.fillStyle = getPenColor();
+        ctx.globalAlpha = 0.3;
+        ctx.fillRect(x - w / 2, y - h / 2, w, h);
+        ctx.globalAlpha = 1;
+      }
+
+      function drawLightning(x0, y0, x1, y1) {
+        ctx.strokeStyle = getPenColor();
+        ctx.lineWidth = 2;
+        ctx.shadowColor = getPenColor();
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        const steps = 8;
+        for (let i = 1; i <= steps; i++) {
+          const t = i / steps;
+          const tx = x0 + (x1 - x0) * t + (Math.random() - 0.5) * 20;
+          const ty = y0 + (y1 - y0) * t + (Math.random() - 0.5) * 20;
+          ctx.lineTo(tx, ty);
+        }
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      function drawMosh(cx, cy, vx, vy) {
+        const speed = Math.sqrt(vx * vx + vy * vy);
+        if (speed < 1) return;
+        const radius = 30, r2 = radius * radius;
+        const x0 = Math.max(0, Math.floor(cx - radius)), y0 = Math.max(0, Math.floor(cy - radius));
+        const x1 = Math.min(TEX_W, Math.ceil(cx + radius)), y1 = Math.min(TEX_H, Math.ceil(cy + radius));
+        const w = x1 - x0, h = y1 - y0;
+        if (w <= 0 || h <= 0) return;
+        const imgData = ctx.getImageData(x0, y0, w, h), src = new Uint8ClampedArray(imgData.data);
+        const intensity = Math.min(speed / 10, 1);
+        for (let py = 0; py < h; py++) {
+          for (let px = 0; px < w; px++) {
+            const dx = (x0 + px) - cx, dy = (y0 + py) - cy, d2 = dx * dx + dy * dy;
+            if (d2 > r2) continue;
+            const f = (1 - Math.sqrt(d2) / radius) * intensity;
+            const di = (py * w + px) * 4;
+            const dispX = Math.round(vx * f * 2), dispY = Math.round(vy * f * 2);
+            const sx = Math.max(0, Math.min(w - 1, px - dispX)), sy = Math.max(0, Math.min(h - 1, py - dispY));
+            const si = (sy * w + sx) * 4;
+            imgData.data[di] = src[si]; imgData.data[di + 1] = src[si + 1]; imgData.data[di + 2] = src[si + 2];
+            const shift = Math.round(f * speed * 0.5);
+            if (shift > 0) {
+              imgData.data[di] = src[(sy * w + Math.max(0, sx - shift)) * 4];
+              imgData.data[di + 2] = src[(sy * w + Math.min(w - 1, sx + shift)) * 4 + 2];
+            }
+          }
+        }
+        ctx.putImageData(imgData, x0, y0);
+      }
+
+      function drawDrip(x, y) {
+        ctx.fillStyle = getPenColor();
+        ctx.globalAlpha = 0.6;
+        ctx.beginPath();
+        const len = 20 + Math.random() * 40;
+        ctx.ellipse(x, y + len / 2, 4, len / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      function drawBlur(x, y) {
+        const r = 15;
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = getPenColor();
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      let fadeSnapshot = null, fadeActive = false;
+      function startFade() { fadeSnapshot = ctx.getImageData(0, 0, TEX_W, TEX_H); fadeActive = true; }
+      function applyFade(x, y) {
+        if (!fadeSnapshot) return;
+        ctx.globalAlpha = 0.05;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(x, y, 30, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      function stopFade() { fadeActive = false; }
+
+      let spiralAngle = 0;
+      function drawSpiral(x, y) {
+        spiralAngle += 0.3;
+        ctx.strokeStyle = getPenColor();
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let i = 0; i < 50; i++) {
+          const a = spiralAngle + i * 0.2;
+          const r = i * 0.8;
+          const px = x + Math.cos(a) * r, py = y + Math.sin(a) * r;
+          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+
+      function drawMirror(x0, y0, x1, y1) {
+        ctx.strokeStyle = getPenColor();
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(TEX_W - x0, y0); ctx.lineTo(TEX_W - x1, y1); ctx.stroke();
+      }
+
+      function drawWarp(cx, cy, vx, vy) {
+        const speed = Math.sqrt(vx * vx + vy * vy);
+        if (speed < 1) return;
+        const radius = 40, r2 = radius * radius;
+        const x0 = Math.max(0, Math.floor(cx - radius)), y0 = Math.max(0, Math.floor(cy - radius));
+        const x1 = Math.min(TEX_W, Math.ceil(cx + radius)), y1 = Math.min(TEX_H, Math.ceil(cy + radius));
+        const w = x1 - x0, h = y1 - y0;
+        if (w <= 0 || h <= 0) return;
+        const imgData = ctx.getImageData(x0, y0, w, h), src = new Uint8ClampedArray(imgData.data);
+        for (let py = 0; py < h; py++) {
+          for (let px = 0; px < w; px++) {
+            const dx = (x0 + px) - cx, dy = (y0 + py) - cy, d2 = dx * dx + dy * dy;
+            if (d2 > r2) continue;
+            const dist = Math.sqrt(d2), f = 1 - dist / radius;
+            const angle = Math.atan2(dy, dx) + f * 0.5;
+            const newDist = dist * (1 + f * 0.3);
+            const sx = Math.round(cx + Math.cos(angle) * newDist) - x0;
+            const sy = Math.round(cy + Math.sin(angle) * newDist) - y0;
+            if (sx >= 0 && sx < w && sy >= 0 && sy < h) {
+              const di = (py * w + px) * 4, si = (sy * w + sx) * 4;
+              imgData.data[di] = src[si]; imgData.data[di + 1] = src[si + 1]; imgData.data[di + 2] = src[si + 2];
+            }
+          }
+        }
+        ctx.putImageData(imgData, x0, y0);
+      }
+
+      let trailPoints = [];
+      function drawTrail(x, y) {
+        trailPoints.push({ x, y, age: 0 });
+        if (trailPoints.length > 30) trailPoints.shift();
+        trailPoints.forEach(p => {
+          p.age++;
+          const alpha = 1 - p.age / 30;
+          if (alpha > 0) {
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = getPenColor();
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 5 * alpha, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+        ctx.globalAlpha = 1;
+        trailPoints = trailPoints.filter(p => p.age < 30);
+      }
+
+      function drawNeon(x0, y0, x1, y1) {
+        ctx.strokeStyle = getPenColor();
+        ctx.lineWidth = 6;
+        ctx.lineCap = 'round';
+        ctx.shadowColor = getPenColor();
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      function drawShard(x, y) {
+        const count = 3 + Math.floor(Math.random() * 4);
+        ctx.fillStyle = getPenColor();
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const dist = 10 + Math.random() * 30;
+          const size = 5 + Math.random() * 10;
+          ctx.save();
+          ctx.translate(x + Math.cos(angle) * dist, y + Math.sin(angle) * dist);
+          ctx.rotate(angle);
+          ctx.beginPath();
+          ctx.moveTo(0, -size);
+          ctx.lineTo(size * 0.3, size);
+          ctx.lineTo(-size * 0.3, size);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      function sendCanvas() {
+        const shape = currentVaseShape || 'vaseA';
+        socket.emit('draw', { dataURL: canvas.toDataURL('image/png'), mode: currentMode, vaseShape: shape });
+      }
+
+      function onDown(e) {
+        if (currentTool.type !== 'pen') return;
+        e.preventDefault();
+        const p = getPos(e);
+        drawing = true;
+        lastX = p.x; lastY = p.y;
+
+        if (currentTool.id === 'lava') {
+          lavaSnapshot = ctx.getImageData(0, 0, TEX_W, TEX_H);
+          lavaActive = true;
+          if (!lavaRAF) lavaRAF = requestAnimationFrame(lavaStep);
+          canvas.style.cursor = 'grabbing';
+        } else if (currentTool.id === 'fade') {
+          startFade();
+        } else if (currentTool.id === 'warp' || currentTool.id === 'mosh') {
+          canvas.style.cursor = 'grabbing';
+        }
+
+        if (['pop', 'glitch', 'drip', 'spiral', 'shard'].includes(currentTool.id)) {
+          if (currentTool.id === 'pop') drawPop(p.x, p.y);
+          else if (currentTool.id === 'glitch') drawGlitch(p.x, p.y);
+          else if (currentTool.id === 'drip') drawDrip(p.x, p.y);
+          else if (currentTool.id === 'spiral') drawSpiral(p.x, p.y);
+          else if (currentTool.id === 'shard') drawShard(p.x, p.y);
+        }
+      }
+
+      function onMove(e) {
+        if (!drawing || currentTool.type !== 'pen') return;
+        e.preventDefault();
+        const p = getPos(e);
+        const vx = p.x - lastX, vy = p.y - lastY;
+
+        switch (currentTool.id) {
+          case 'pop': drawPop(p.x, p.y); break;
+          case 'rainbow': drawRainbow(lastX, lastY, p.x, p.y); break;
+          case 'lava': lavaAddVel(p.x, p.y, vx, vy); break;
+          case 'glitch': drawGlitch(p.x, p.y); break;
+          case 'lightning': drawLightning(lastX, lastY, p.x, p.y); break;
+          case 'mosh': drawMosh(p.x, p.y, vx, vy); break;
+          case 'drip': drawDrip(p.x, p.y); break;
+          case 'blur': drawBlur(p.x, p.y); break;
+          case 'fade': applyFade(p.x, p.y); break;
+          case 'spiral': drawSpiral(p.x, p.y); break;
+          case 'mirror': drawMirror(lastX, lastY, p.x, p.y); break;
+          case 'warp': drawWarp(p.x, p.y, vx, vy); break;
+          case 'trail': drawTrail(p.x, p.y); break;
+          case 'neon': drawNeon(lastX, lastY, p.x, p.y); break;
+          case 'shard': drawShard(p.x, p.y); break;
+        }
+        lastX = p.x; lastY = p.y;
+      }
+
+      function onUp() {
+        if (!drawing) return;
+        drawing = false;
+        if (currentTool.id === 'lava') { lavaActive = false; canvas.style.cursor = 'grab'; }
+        else if (currentTool.id === 'fade') { stopFade(); }
+        else if (currentTool.id === 'warp' || currentTool.id === 'mosh') { canvas.style.cursor = 'grab'; }
+        sendCanvas();
+      }
+
+      canvas.addEventListener('pointerdown', onDown);
+      canvas.addEventListener('pointermove', onMove);
+      canvas.addEventListener('pointerup', onUp);
+      canvas.addEventListener('pointerleave', onUp);
+      canvas.addEventListener('pointercancel', onUp);
+
+      // ══════════════════════════════════════
+      //  Save & Firing Sequence (Controller)
+      // ══════════════════════════════════════
+      let saveTimeout = null;
+      let saveCompleted = false;
+
+      // ── Signature Canvas Setup ──
+      let pendingSaveData = null;
+      let signatureDataUrl = null;
+
+      const signCanvas = document.getElementById('sign-canvas');
+      const signCtx = signCanvas.getContext('2d');
+      let signDrawing = false;
+      let signLastX = 0, signLastY = 0;
+
+      function clearSignCanvas() {
+        signCtx.fillStyle = '#fafafa';
+        signCtx.fillRect(0, 0, signCanvas.width, signCanvas.height);
+      }
+      clearSignCanvas();
+
+      signCanvas.addEventListener('pointerdown', (e) => {
+        signDrawing = true;
+        const rect = signCanvas.getBoundingClientRect();
+        const scaleX = signCanvas.width / rect.width;
+        const scaleY = signCanvas.height / rect.height;
+        signLastX = (e.clientX - rect.left) * scaleX;
+        signLastY = (e.clientY - rect.top) * scaleY;
+      });
+      signCanvas.addEventListener('pointermove', (e) => {
+        if (!signDrawing) return;
+        const rect = signCanvas.getBoundingClientRect();
+        const scaleX = signCanvas.width / rect.width;
+        const scaleY = signCanvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        signCtx.strokeStyle = '#333';
+        signCtx.lineWidth = 3;
+        signCtx.lineCap = 'round';
+        signCtx.lineJoin = 'round';
+        signCtx.beginPath();
+        signCtx.moveTo(signLastX, signLastY);
+        signCtx.lineTo(x, y);
+        signCtx.stroke();
+        signLastX = x;
+        signLastY = y;
+      });
+      signCanvas.addEventListener('pointerup', () => signDrawing = false);
+      signCanvas.addEventListener('pointerleave', () => signDrawing = false);
+
+      document.getElementById('sign-clear-btn').addEventListener('click', clearSignCanvas);
+
+      document.getElementById('sign-done-btn').addEventListener('click', () => {
+        signatureDataUrl = signCanvas.toDataURL('image/png');
+        document.getElementById('sign-overlay').classList.remove('active');
+
+        // Now proceed with the actual save
+        proceedWithSave(pendingSaveData, signatureDataUrl);
+      });
+
+      function showQrPopup(workId, emotionEffectValues) {
+        const qrPopup = document.getElementById('qr-popup');
+        const qrContainer = document.getElementById('qr-canvas-container');
+        qrContainer.innerHTML = '';
+
+        const workUrl = `${location.origin}?workId=${workId}`;
+
+        if (typeof QRious !== 'undefined') {
+          const qrCanvas = document.createElement('canvas');
+          qrContainer.appendChild(qrCanvas);
+          new QRious({
+            element: qrCanvas,
+            value: workUrl,
+            size: 200,
+            level: 'M'
+          });
+        } else {
+          const qrImg = document.createElement('img');
+          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(workUrl)}`;
+          qrImg.alt = 'QR Code';
+          qrImg.style.width = '200px';
+          qrImg.style.height = '200px';
+          qrContainer.appendChild(qrImg);
+        }
+
+        // Render emotion bar in QR popup
+        if (emotionEffectValues) {
+          const emotions = calcEmotionFromEffects(emotionEffectValues);
+          renderEmotionBar(
+            document.getElementById('qr-emotion-bar'),
+            document.getElementById('qr-emotion-labels'),
+            emotions
+          );
+          document.getElementById('qr-emotion-section').style.display = 'block';
+        }
+
+        qrPopup.classList.add('active');
+      }
+
+      function showSaveResult(data) {
+        if (saveCompleted) return;
+        saveCompleted = true;
+        clearTimeout(saveTimeout);
+
+        document.getElementById('save-progress-overlay').classList.remove('active');
+        showQrPopup(data.workId, pendingSaveData ? pendingSaveData.effectValues : null);
+      }
+
+      function proceedWithSave(saveData, signature) {
+        saveCompleted = false;
+        const saveOverlay = document.getElementById('save-progress-overlay');
+        saveOverlay.classList.add('active');
+        document.getElementById('save-status-text').textContent = '焼き上げ中...';
+
+        // Attach signature to saveData
+        saveData.signatureData = signature;
+
+        // Send save data to viewer
+        socket.emit('save', saveData);
+
+        // Timeout fallback
+        saveTimeout = setTimeout(() => {
+          if (saveCompleted) return;
+          console.warn('Viewer did not respond, saving directly...');
+
+          const workId = 'work_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+          fetch('/api/works/' + workId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              displacementData: saveData.displacementData,
+              effectValues: saveData.effectValues,
+              vaseShape: saveData.vaseShape,
+              mode: saveData.mode,
+              thumbnailUrl: saveData.displacementData,
+              signatureData: signature
+            })
+          }).then(() => console.log('Saved to server API:', workId))
+            .catch(e => console.error('Server save error:', e));
+
+          if (db && firebaseReady) {
+            db.collection(GALLERY_PATH).doc(workId).set({
+              displacementData: saveData.displacementData,
+              effectValues: saveData.effectValues,
+              vaseShape: saveData.vaseShape,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+              thumbnailUrl: saveData.displacementData,
+              mode: saveData.mode,
+              signatureData: signature
+            }).catch(e => console.warn('Firestore save error:', e));
+          }
+
+          showSaveResult({ workId, thumbnailUrl: saveData.displacementData });
+        }, 10000);
+      }
+
+      // Save button → Show sign overlay first
+      document.getElementById('save-btn').addEventListener('click', () => {
+        pendingSaveData = {
+          displacementData: canvas.toDataURL('image/png'),
+          effectValues: { ...effectValues },
+          vaseShape: currentVaseShape || 'vaseA',
+          mode: currentMode,
+          timestamp: Date.now()
+        };
+
+        // Show signature overlay
+        clearSignCanvas();
+        document.getElementById('sign-overlay').classList.add('active');
+      });
+
+      // Receive save completion from viewer
+      socket.on('saveComplete', (data) => {
+        showSaveResult(data);
+      });
+
+      document.getElementById('qr-close-btn').addEventListener('click', () => {
+        document.getElementById('qr-popup').classList.remove('active');
+      });
+
+      // ══════════════════════════════════════
+      //  Idle Timer -> Gallery Mode (30s)
+      // ══════════════════════════════════════
+      let idleTimer = null;
+      const IDLE_TIMEOUT = 30000;
+
+      function resetIdleTimer() {
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+          socket.emit('enterGallery');
+        }, IDLE_TIMEOUT);
+      }
+
+      ['pointerdown', 'pointermove', 'keydown', 'click'].forEach(evt => {
+        document.addEventListener(evt, () => {
+          // If gallery is active, exit it on any input
+          socket.emit('exitGallery');
+          resetIdleTimer();
+        });
+      });
+      resetIdleTimer();
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  VIEWER
+    // ══════════════════════════════════════════════════════════════
+    if (role === 'viewer') {
+      const container = document.getElementById('viewer-ui');
+      container.style.display = 'block';
+
+      // Theme state
+      let isDarkMode = localStorage.getItem('viewerTheme') !== 'light';
+      const THEME = {
+        dark: {
+          background: 0x1a1a1a,
+          fogBase: { r: 0.1, g: 0.1, b: 0.1 },
+          gridMain: 0x333333,
+          gridSub: 0x222222,
+          ambientBase: 0.4
+        },
+        light: {
+          background: 0xf0f0f0,
+          fogBase: { r: 0.9, g: 0.9, b: 0.9 },
+          gridMain: 0xcccccc,
+          gridSub: 0xdddddd,
+          ambientBase: 0.6
+        }
+      };
+
+      const texCanvas = document.createElement('canvas');
+      texCanvas.width = TEX_W; texCanvas.height = TEX_H;
+      const texCtx = texCanvas.getContext('2d');
+      texCtx.fillStyle = '#fff'; texCtx.fillRect(0, 0, TEX_W, TEX_H);
+
+      const dispCanvas = document.createElement('canvas');
+      dispCanvas.width = TEX_W; dispCanvas.height = TEX_H;
+      const dispCtx = dispCanvas.getContext('2d');
+      dispCtx.fillStyle = '#000'; dispCtx.fillRect(0, 0, TEX_W, TEX_H);
+
+      const normalCanvas = document.createElement('canvas');
+      normalCanvas.width = TEX_W; normalCanvas.height = TEX_H;
+      const normalCtx = normalCanvas.getContext('2d');
+      normalCtx.fillStyle = '#8080ff'; normalCtx.fillRect(0, 0, TEX_W, TEX_H);
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(isDarkMode ? THEME.dark.background : THEME.light.background);
+
+
+      const viewW = window.innerWidth, viewH = window.innerHeight - 44;
+      const camera = new THREE.PerspectiveCamera(45, viewW / viewH, 0.1, 100);
+      const defaultCamPos = { x: 0, y: 2.5, z: 7 };
+      camera.position.set(defaultCamPos.x, defaultCamPos.y, defaultCamPos.z);
+      camera.lookAt(0, 1.5, 0);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(viewW, viewH);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.2;
+      container.appendChild(renderer.domElement);
+
+      // Lighting
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+      scene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+      dirLight.position.set(4, 6, 4);
+      scene.add(dirLight);
+
+      // Dynamic point lights (3 pulsing lights)
+      const pointLights = [];
+      const lightPositions = [
+        { x: 2, y: 2, z: 2 },
+        { x: -2, y: 1.5, z: 2 },
+        { x: 0, y: 3, z: -2 }
+      ];
+      lightPositions.forEach((pos, i) => {
+        const light = new THREE.PointLight(0xffffff, 0, 8);
+        light.position.set(pos.x, pos.y, pos.z);
+        scene.add(light);
+        pointLights.push({ light, baseIntensity: 0, phase: i * Math.PI * 2 / 3 });
+      });
+
+      // ══════════════════════════════════════
+      //  Solid Vase Geometry from JSON data
+      //  SplineCurve interpolation + wall thickness + closed bottom
+      // ══════════════════════════════════════
+      const WALL_THICKNESS = 0.12;
+      const LATHE_SEGMENTS = 128;
+      const SPLINE_SAMPLES = 60;
+
+      function createSolidVaseGeometry(shapeData) {
+        // Scale factor: normalize to a nice display height (~3.5 units)
+        const maxH = shapeData[shapeData.length - 1].h;
+        const scale = 3.5 / maxH;
+
+        // Build SplineCurve from the JSON control points (outer wall)
+        const outerControlPts = shapeData.map(p =>
+          new THREE.Vector2(p.r * scale, p.h * scale)
+        );
+        const outerSpline = new THREE.SplineCurve(outerControlPts);
+        const outerPts = outerSpline.getPoints(SPLINE_SAMPLES);
+
+        // Inner wall: offset inward by WALL_THICKNESS
+        const innerPts = outerPts.map(p => {
+          const r = Math.max(0.01, p.x - WALL_THICKNESS);
+          return new THREE.Vector2(r, p.y);
+        });
+
+        // Build the full profile: outer bottom -> outer top -> inner top -> inner bottom -> close
+        const profile = [];
+
+        // Outer bottom center (close the bottom)
+        profile.push(new THREE.Vector2(0, outerPts[0].y));
+
+        // Outer wall (bottom to top)
+        outerPts.forEach(p => profile.push(p.clone()));
+
+        // Rim: connect outer top to inner top (small lip)
+        const outerTop = outerPts[outerPts.length - 1];
+        const innerTop = innerPts[innerPts.length - 1];
+        profile.push(new THREE.Vector2(outerTop.x, outerTop.y));
+        profile.push(new THREE.Vector2(innerTop.x, innerTop.y));
+
+        // Inner wall (top to bottom, reversed)
+        for (let i = innerPts.length - 1; i >= 0; i--) {
+          profile.push(innerPts[i].clone());
+        }
+
+        // Inner bottom center (close the bottom from inside)
+        profile.push(new THREE.Vector2(0, innerPts[0].y));
+
+        return new THREE.LatheGeometry(profile, LATHE_SEGMENTS);
+      }
+
+      let currentVaseShape = 'vaseA';
+      let geometry = createSolidVaseGeometry(potteryShapes.vaseA);
+
+      const canvasTexture = new THREE.CanvasTexture(texCanvas);
+      canvasTexture.colorSpace = THREE.SRGBColorSpace;
+      const dispTexture = new THREE.CanvasTexture(dispCanvas);
+      const normalTexture = new THREE.CanvasTexture(normalCanvas);
+
+      function buildHeightMap() {
+        const src = texCtx.getImageData(0, 0, TEX_W, TEX_H);
+        const dst = dispCtx.createImageData(TEX_W, TEX_H);
+        for (let i = 0; i < src.data.length; i += 4) {
+          const lum = src.data[i] * 0.299 + src.data[i + 1] * 0.587 + src.data[i + 2] * 0.114;
+          const inv = 255 - lum;
+          dst.data[i] = inv; dst.data[i + 1] = inv; dst.data[i + 2] = inv; dst.data[i + 3] = 255;
+        }
+        dispCtx.putImageData(dst, 0, 0);
+        dispTexture.needsUpdate = true;
+      }
+
+      function buildNormalMap() {
+        const src = texCtx.getImageData(0, 0, TEX_W, TEX_H);
+        const dst = normalCtx.createImageData(TEX_W, TEX_H);
+        const strength = 2.0;
+        for (let y = 0; y < TEX_H; y++) {
+          for (let x = 0; x < TEX_W; x++) {
+            const i = (y * TEX_W + x) * 4;
+            const getHeight = (px, py) => {
+              px = Math.max(0, Math.min(TEX_W - 1, px));
+              py = Math.max(0, Math.min(TEX_H - 1, py));
+              const idx = (py * TEX_W + px) * 4;
+              return (src.data[idx] * 0.299 + src.data[idx + 1] * 0.587 + src.data[idx + 2] * 0.114) / 255;
+            };
+            const left = getHeight(x - 1, y), right = getHeight(x + 1, y);
+            const up = getHeight(x, y - 1), down = getHeight(x, y + 1);
+            const dx = (left - right) * strength, dy = (up - down) * strength, dz = 1.0;
+            const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            dst.data[i] = Math.floor((dx / len * 0.5 + 0.5) * 255);
+            dst.data[i + 1] = Math.floor((dy / len * 0.5 + 0.5) * 255);
+            dst.data[i + 2] = Math.floor((dz / len * 0.5 + 0.5) * 255);
+            dst.data[i + 3] = 255;
+          }
+        }
+        normalCtx.putImageData(dst, 0, 0);
+        normalTexture.needsUpdate = true;
+      }
+
+      // Professional ceramic/metallic materials
+      const matDisplacement = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.25,
+        metalness: 0.1,
+        map: canvasTexture,
+        displacementMap: dispTexture,
+        displacementScale: 0.12,
+        envMapIntensity: 0.5,
+        side: THREE.DoubleSide
+      });
+
+      const matParallax = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.3,
+        metalness: 0.05,
+        map: canvasTexture,
+        bumpMap: dispTexture,
+        bumpScale: 0.6,
+        side: THREE.DoubleSide
+      });
+
+      const matBump = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.35,
+        metalness: 0.08,
+        map: canvasTexture,
+        normalMap: normalTexture,
+        normalScale: new THREE.Vector2(1.2, 1.2),
+        side: THREE.DoubleSide
+      });
+
+      let currentMode = 'bump'; // Default to Bump/Normal
+      let vase = new THREE.Mesh(geometry, matBump);
+      vase.position.y = 0;
+      scene.add(vase);
+
+      // ── Bottom disc: shows canvas sketch on the underside of the vase ──
+      const bottomDiscTexture = new THREE.CanvasTexture(texCanvas);
+      bottomDiscTexture.colorSpace = THREE.SRGBColorSpace;
+      const bottomDiscMaterial = new THREE.MeshStandardMaterial({
+        map: bottomDiscTexture,
+        roughness: 0.4,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+      });
+
+      function getBottomRadius(shapeData) {
+        const maxH = shapeData[shapeData.length - 1].h;
+        const scale = 3.5 / maxH;
+        return shapeData[0].r * scale;
+      }
+
+      let bottomDiscGeom = new THREE.CircleGeometry(getBottomRadius(potteryShapes[currentVaseShape]), 64);
+      let bottomDisc = new THREE.Mesh(bottomDiscGeom, bottomDiscMaterial);
+      bottomDisc.rotation.x = -Math.PI / 2; // Face downward
+      bottomDisc.position.y = 0.01; // Slightly above y=0 to avoid z-fighting
+      scene.add(bottomDisc);
+
+      // Function to switch vase shape
+      function setVaseShape(shape) {
+        if (!potteryShapes[shape] || shape === currentVaseShape) return;
+        currentVaseShape = shape;
+
+        // Remove old vase and disc
+        scene.remove(vase);
+        scene.remove(bottomDisc);
+        geometry.dispose();
+        bottomDiscGeom.dispose();
+
+        // Create new geometry from JSON data
+        geometry = createSolidVaseGeometry(potteryShapes[shape]);
+
+        // Create new mesh with current material
+        let currentMaterial;
+        if (currentMode === 'displacement') currentMaterial = matDisplacement;
+        else if (currentMode === 'parallax') currentMaterial = matParallax;
+        else currentMaterial = matBump;
+
+        vase = new THREE.Mesh(geometry, currentMaterial);
+        vase.position.y = 0;
+        scene.add(vase);
+
+        // Recreate bottom disc with new radius
+        bottomDiscGeom = new THREE.CircleGeometry(getBottomRadius(potteryShapes[shape]), 64);
+        bottomDisc = new THREE.Mesh(bottomDiscGeom, bottomDiscMaterial);
+        bottomDisc.rotation.x = -Math.PI / 2;
+        bottomDisc.position.y = 0.01;
+        scene.add(bottomDisc);
+      }
+
+      // Grid
+      let grid = new THREE.GridHelper(8, 20,
+        isDarkMode ? THEME.dark.gridMain : THEME.light.gridMain,
+        isDarkMode ? THEME.dark.gridSub : THEME.light.gridSub
+      );
+      scene.add(grid);
+
+      // Theme toggle
+      const themeToggleBtn = document.getElementById('theme-toggle');
+      if (!isDarkMode) container.classList.add('light-mode');
+      updateThemeButton();
+
+      function updateThemeButton() {
+        themeToggleBtn.innerHTML = isDarkMode
+          ? '<span class="theme-icon">☀️</span> Light'
+          : '<span class="theme-icon">🌙</span> Dark';
+      }
+
+      function applyTheme() {
+        const theme = isDarkMode ? THEME.dark : THEME.light;
+
+        // Scene background
+        scene.background.setHex(theme.background);
+
+        // Recreate grid with new colors
+        scene.remove(grid);
+        grid = new THREE.GridHelper(8, 20, theme.gridMain, theme.gridSub);
+        scene.add(grid);
+
+        // Save preference
+        localStorage.setItem('viewerTheme', isDarkMode ? 'dark' : 'light');
+
+        // Update UI
+        if (isDarkMode) {
+          container.classList.remove('light-mode');
+        } else {
+          container.classList.add('light-mode');
+        }
+        updateThemeButton();
+      }
+
+      themeToggleBtn.addEventListener('click', () => {
+        isDarkMode = !isDarkMode;
+        applyTheme();
+      });
+
+      function setMode(mode) {
+        currentMode = mode;
+        if (mode === 'displacement') vase.material = matDisplacement;
+        else if (mode === 'parallax') vase.material = matParallax;
+        else vase.material = matBump;
+      }
+
+      // ══════════════════════════════════════
+      //  Particle System
+      // ══════════════════════════════════════
+      const particleCount = 200;
+      const particleGeometry = new THREE.BufferGeometry();
+      const particlePositions = new Float32Array(particleCount * 3);
+      const particleVelocities = [];
+      const particleColors = new Float32Array(particleCount * 3);
+
+      for (let i = 0; i < particleCount; i++) {
+        particlePositions[i * 3] = (Math.random() - 0.5) * 10;
+        particlePositions[i * 3 + 1] = Math.random() * 6;
+        particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+        particleVelocities.push({
+          x: (Math.random() - 0.5) * 0.01,
+          y: (Math.random() - 0.5) * 0.01,
+          z: (Math.random() - 0.5) * 0.01
+        });
+        particleColors[i * 3] = 1;
+        particleColors[i * 3 + 1] = 1;
+        particleColors[i * 3 + 2] = 1;
+      }
+
+      particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+      particleGeometry.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+
+      const particleMaterial = new THREE.PointsMaterial({
+        size: 0.05,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.6,
+        blending: THREE.AdditiveBlending
+      });
+
+      const particles = new THREE.Points(particleGeometry, particleMaterial);
+      scene.add(particles);
+
+      // Current emotion state
+      let dominantEmotion = 'joy';
+      let emotionIntensity = 0;
+      let targetColor = { r: 1, g: 1, b: 1 };
+      let currentColor = { r: 1, g: 1, b: 1 };
+      let particleSpeed = 1;
+
+
+      // ══════════════════════════════════════
+      //  Cinematic Camera (Always Active)
+      // ══════════════════════════════════════
+      let cameraAngle = 0;
+      let cameraZoom = 0;
+
+      function onActivity() {
+        // Activity tracking (for future use if needed)
+      }
+
+      // ══════════════════════════════════════
+      //  Post-processing
+      // ══════════════════════════════════════
+      const renderTarget = new THREE.WebGLRenderTarget(viewW * renderer.getPixelRatio(), viewH * renderer.getPixelRatio());
+      const postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      const postScene = new THREE.Scene();
+
+      const effectUniforms = {
+        tScene: { value: renderTarget.texture },
+        time: { value: 0 },
+        resolution: { value: new THREE.Vector2(viewW, viewH) },
+        uMelt: { value: 0 }, uTiltshift: { value: 0 },
+        uBadtv: { value: 0 }, uEdge: { value: 0 },
+        uSlices: { value: 0 }, uVignette: { value: 0 },
+        uWobble: { value: 0 }, uPolar: { value: 0 },
+        uSmear: { value: 0 }, uDot: { value: 0 }
+      };
+
+      const postMaterial = new THREE.ShaderMaterial({
+        uniforms: effectUniforms,
+        vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+        fragmentShader: `
+      precision highp float;
+      uniform sampler2D tScene;
+      uniform float time;
+      uniform vec2 resolution;
+      uniform float uMelt, uTiltshift, uBadtv, uEdge, uSlices, uVignette, uWobble, uPolar, uSmear, uDot;
+      varying vec2 vUv;
+
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+
+      void main() {
+        vec2 uv = vUv;
+
+        if (uWobble > 0.01) {
+          float w = uWobble * 0.04;
+          uv.x += w * sin(uv.y * 18.0 + time * 2.5);
+          uv.y += w * cos(uv.x * 18.0 + time * 1.8);
+        }
+
+        if (uMelt > 0.01) {
+          float m = uMelt * 0.05;
+          uv.y += m * sin(uv.x * 12.0 + time * 1.2) * sin(uv.y * 6.0 + time * 0.8);
+          uv.x += m * 0.5 * cos(uv.y * 10.0 + time * 2.0);
+        }
+
+        if (uBadtv > 0.01) {
+          float n = hash(vec2(floor(uv.y * 80.0), floor(time * 15.0)));
+          float jitter = (n - 0.5) * uBadtv * 0.08;
+          float band = step(0.97 - uBadtv * 0.05, hash(vec2(floor(uv.y * 30.0), floor(time * 8.0))));
+          uv.x += jitter + band * (n - 0.5) * uBadtv * 0.15;
+        }
+
+        if (uSlices > 0.01) {
+          float si = floor(uv.y * 25.0);
+          float off = sin(si * 4.3 + time * 0.8) * uSlices * 0.06;
+          uv.x += off * step(0.4, hash(vec2(si, 1.0)));
+        }
+
+        vec4 color;
+        if (uSmear > 0.01) {
+          vec4 sum = vec4(0.0);
+          float sd = uSmear * 0.025;
+          for (float i = 0.0; i < 10.0; i++) {
+            sum += texture2D(tScene, uv - vec2(sd * i / 10.0, sd * i / 10.0 * 0.3));
+          }
+          color = sum / 10.0;
+        } else {
+          color = texture2D(tScene, uv);
+        }
+
+        if (uBadtv > 0.01) {
+          float sp = uBadtv * 0.012;
+          color.r = texture2D(tScene, uv + vec2(sp, 0.0)).r;
+          color.b = texture2D(tScene, uv - vec2(sp, 0.0)).b;
+        }
+
+        if (uTiltshift > 0.01) {
+          float bz = smoothstep(0.15, 0.9, abs(vUv.y - 0.5) * 2.0) * uTiltshift;
+          if (bz > 0.01) {
+            vec4 bl = vec4(0.0);
+            for (float i = -4.0; i <= 4.0; i++) bl += texture2D(tScene, uv + vec2(0.0, i * 0.005 * bz));
+            color = mix(color, bl / 9.0, bz * 0.8);
+          }
+        }
+
+        if (uEdge > 0.01) {
+          float e = 1.0 / resolution.x;
+          vec3 tl = texture2D(tScene, uv + vec2(-e, -e)).rgb;
+          vec3 tr = texture2D(tScene, uv + vec2(e, -e)).rgb;
+          vec3 bl = texture2D(tScene, uv + vec2(-e, e)).rgb;
+          vec3 br = texture2D(tScene, uv + vec2(e, e)).rgb;
+          vec3 gx = -tl + tr - bl + br;
+          vec3 gy = -tl - tr + bl + br;
+          color.rgb += sqrt(gx * gx + gy * gy) * uEdge * 2.0;
+        }
+
+        if (uBadtv > 0.01) {
+          float sc = sin(vUv.y * resolution.y * 3.14159) * 0.5 + 0.5;
+          color.rgb *= 1.0 - uBadtv * 0.25 * (1.0 - sc);
+        }
+
+        if (uVignette > 0.01) {
+          float d = length(vUv - 0.5) * 1.6;
+          color.rgb *= 1.0 - smoothstep(0.2, 1.3, d) * uVignette * 0.85;
+        }
+
+        if (uPolar > 0.01) {
+          vec2 c = vUv - 0.5;
+          float ang = atan(c.y, c.x), rad = length(c);
+          float ps = uPolar * 0.12 + 0.005;
+          vec2 pu = vec2(cos(floor(ang / ps) * ps), sin(floor(ang / ps) * ps)) * floor(rad / ps) * ps + 0.5;
+          color = mix(color, texture2D(tScene, pu), uPolar * 0.65);
+        }
+
+        if (uDot > 0.01) {
+          float ds = mix(3.0, 14.0, uDot);
+          vec2 cc = (floor(vUv * resolution / ds) + 0.5) * ds / resolution;
+          vec4 dc = texture2D(tScene, cc);
+          float lm = dot(dc.rgb, vec3(0.299, 0.587, 0.114));
+          float dd = length(fract(vUv * resolution / ds) - 0.5);
+          float dm = 1.0 - smoothstep(lm * 0.45, lm * 0.45 + 0.05, dd);
+          color = mix(color, vec4(dc.rgb * dm, 1.0), uDot * 0.55);
+        }
+
+        gl_FragColor = color;
+      }
+    `
+      });
+
+      const postQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMaterial);
+      postScene.add(postQuad);
+
+      let effectsActive = false;
+
+      socket.on('draw', (data) => {
+        onActivity();
+        const dataURL = typeof data === 'string' ? data : data.dataURL;
+        const mode = typeof data === 'object' && data.mode ? data.mode : currentMode;
+        const vaseShape = typeof data === 'object' && data.vaseShape ? data.vaseShape : 'vaseA';
+        const img = new Image();
+        img.onload = () => {
+          texCtx.clearRect(0, 0, TEX_W, TEX_H);
+          texCtx.drawImage(img, 0, 0, TEX_W, TEX_H);
+          canvasTexture.needsUpdate = true;
+          bottomDiscTexture.needsUpdate = true;
+          buildHeightMap();
+          buildNormalMap();
+          setMode(mode);
+          setVaseShape(vaseShape);
+        };
+        img.src = dataURL;
+      });
+
+      socket.on('vaseShape', (shape) => {
+        onActivity();
+        setVaseShape(shape);
+      });
+
+      socket.on('emotion', (data) => {
+        onActivity();
+        effectUniforms.uMelt.value = data.melt || 0;
+        effectUniforms.uTiltshift.value = data.tiltshift || 0;
+        effectUniforms.uBadtv.value = data.badtv || 0;
+        effectUniforms.uEdge.value = data.edge || 0;
+        effectUniforms.uSlices.value = data.slices || 0;
+        effectUniforms.uVignette.value = data.vignette || 0;
+        effectUniforms.uWobble.value = data.wobble || 0;
+        effectUniforms.uPolar.value = data.polar || 0;
+        effectUniforms.uSmear.value = data.smear || 0;
+        effectUniforms.uDot.value = data.dot || 0;
+
+        // Find dominant emotion
+        const emotionSums = {
+          joy: (data.melt || 0) + (data.tiltshift || 0),
+          shock: (data.badtv || 0) + (data.edge || 0),
+          sad: (data.slices || 0) + (data.vignette || 0),
+          confuse: (data.wobble || 0) + (data.polar || 0),
+          fire: (data.smear || 0) + (data.dot || 0)
+        };
+
+        let maxEmotion = 'joy', maxVal = 0;
+        Object.entries(emotionSums).forEach(([emo, val]) => {
+          if (val > maxVal) { maxVal = val; maxEmotion = emo; }
+        });
+
+        dominantEmotion = maxEmotion;
+        emotionIntensity = Math.min(maxVal, 1);
+        targetColor = EMOTION_COLORS[dominantEmotion];
+        particleSpeed = 0.5 + emotionIntensity * 2;
+
+        const sum = Object.values(data).reduce((a, b) => a + b, 0);
+        effectsActive = sum > 0.001;
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        const time = performance.now() * 0.001;
+        effectUniforms.time.value = time;
+
+        // Vase rotation
+        vase.rotation.y += 0.004;
+
+        // Cinematic camera orbit (always active)
+        cameraAngle += 0.003;
+        cameraZoom = Math.sin(time * 0.2) * 0.6; // Reduced zoom range
+        const radius = 7 + cameraZoom; // Increased base distance
+        camera.position.x = Math.sin(cameraAngle) * radius;
+        camera.position.z = Math.cos(cameraAngle) * radius;
+        camera.position.y = 2.5 + Math.sin(time * 0.15) * 0.3;
+        camera.lookAt(0, 1.5, 0);
+
+        // Dynamic lighting
+        currentColor.r += (targetColor.r - currentColor.r) * 0.02;
+        currentColor.g += (targetColor.g - currentColor.g) * 0.02;
+        currentColor.b += (targetColor.b - currentColor.b) * 0.02;
+
+        // Ambient light tint (theme-aware)
+        const ambBase = isDarkMode ? THEME.dark.ambientBase : THEME.light.ambientBase;
+        const ambBoost = isDarkMode ? 0.3 : 0.2;
+        ambientLight.color.setRGB(
+          ambBase + currentColor.r * ambBoost * emotionIntensity,
+          ambBase + currentColor.g * ambBoost * emotionIntensity,
+          ambBase + currentColor.b * ambBoost * emotionIntensity
+        );
+
+        // Pulsing point lights
+        pointLights.forEach((pl, i) => {
+          const pulse = Math.sin(time * 2 + pl.phase) * 0.5 + 0.5;
+          pl.light.intensity = emotionIntensity * pulse * 1.5;
+          pl.light.color.setRGB(currentColor.r, currentColor.g, currentColor.b);
+        });
+
+        // Particle animation
+        const positions = particleGeometry.attributes.position.array;
+        const colors = particleGeometry.attributes.color.array;
+        for (let i = 0; i < particleCount; i++) {
+          const vel = particleVelocities[i];
+          positions[i * 3] += vel.x * particleSpeed;
+          positions[i * 3 + 1] += vel.y * particleSpeed;
+          positions[i * 3 + 2] += vel.z * particleSpeed;
+
+          // Wrap around
+          if (positions[i * 3] > 5) positions[i * 3] = -5;
+          if (positions[i * 3] < -5) positions[i * 3] = 5;
+          if (positions[i * 3 + 1] > 6) positions[i * 3 + 1] = 0;
+          if (positions[i * 3 + 1] < 0) positions[i * 3 + 1] = 6;
+          if (positions[i * 3 + 2] > 5) positions[i * 3 + 2] = -5;
+          if (positions[i * 3 + 2] < -5) positions[i * 3 + 2] = 5;
+
+          // Color (theme-aware)
+          const colorBase = isDarkMode ? 0.5 : 0.3;
+          const colorMix = isDarkMode ? 0.5 : 0.7;
+          colors[i * 3] = colorBase + currentColor.r * colorMix;
+          colors[i * 3 + 1] = colorBase + currentColor.g * colorMix;
+          colors[i * 3 + 2] = colorBase + currentColor.b * colorMix;
+        }
+        particleGeometry.attributes.position.needsUpdate = true;
+        particleGeometry.attributes.color.needsUpdate = true;
+
+        // Update bottom disc texture from canvas
+        if (bottomDiscTexture) bottomDiscTexture.needsUpdate = true;
+
+        // Render
+        if (effectsActive) {
+          renderer.setRenderTarget(renderTarget);
+          renderer.render(scene, camera);
+          renderer.setRenderTarget(null);
+          renderer.render(postScene, postCamera);
+        } else {
+          renderer.setRenderTarget(null);
+          renderer.render(scene, camera);
+        }
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        const w = window.innerWidth, h = window.innerHeight - 44;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+        renderTarget.setSize(w * renderer.getPixelRatio(), h * renderer.getPixelRatio());
+        effectUniforms.resolution.value.set(w, h);
+      });
+
+      // ══════════════════════════════════════
+      //  Firing Sequence (Viewer)
+      //  壺を赤く熱して焼き上げ → 冷却 → 360度キャプチャ → Firestore保存
+      // ══════════════════════════════════════
+      let isFiring = false;
+      let firingStartTime = 0;
+      const FIRING_HEAT_DURATION = 3000;  // 3s heating
+      const FIRING_COOL_DURATION = 3000;  // 3s cooling
+      const FIRING_TOTAL = FIRING_HEAT_DURATION + FIRING_COOL_DURATION;
+
+      // Emissive control for firing
+      const originalEmissive = new THREE.Color(0x000000);
+
+      function startFiringAnimation(saveData) {
+        isFiring = true;
+        firingStartTime = performance.now();
+
+        // Show firing overlay
+        const overlay = document.getElementById('firing-overlay');
+        overlay.classList.add('active');
+        document.getElementById('firing-text').textContent = '焼き上げ中...';
+        document.getElementById('firing-sub').textContent = '壺を窯で焼いています';
+
+        // Start capture frames for thumbnail
+        const capturedFrames = [];
+
+        // ── Video Recording (MediaRecorder on WebGL canvas) ──
+        let mediaRecorder = null;
+        let videoChunks = [];
+        let videoDataUrl = null;
+
+        try {
+          const canvasStream = renderer.domElement.captureStream(30); // 30fps
+          mediaRecorder = new MediaRecorder(canvasStream, {
+            mimeType: 'video/webm;codecs=vp9',
+            videoBitsPerSecond: 2500000
+          });
+          mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) videoChunks.push(e.data);
+          };
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(videoChunks, { type: 'video/webm' });
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              videoDataUrl = reader.result;
+              console.log('Video recording complete, size:', blob.size);
+            };
+            reader.readAsDataURL(blob);
+          };
+          mediaRecorder.start();
+          console.log('Video recording started');
+        } catch (e) {
+          console.warn('MediaRecorder not available, skipping video:', e);
+        }
+
+        // 360度回転キャプチャ用: 焼き上げ中に高速回転
+        function firingTick() {
+          if (!isFiring) return;
+          const elapsed = performance.now() - firingStartTime;
+          const progress = Math.min(elapsed / FIRING_TOTAL, 1);
+
+          // Phase 1: Heating (0 - 3s)
+          if (elapsed < FIRING_HEAT_DURATION) {
+            const heatProgress = elapsed / FIRING_HEAT_DURATION;
+            const heatIntensity = Math.sin(heatProgress * Math.PI) * 0.8 + heatProgress * 0.6;
+
+            [matDisplacement, matParallax, matBump].forEach(mat => {
+              mat.emissive = new THREE.Color(heatIntensity * 0.8, heatIntensity * 0.15, 0);
+              mat.emissiveIntensity = heatIntensity * 2;
+            });
+
+            vase.rotation.y += 0.03;
+
+            if (heatProgress > 0.5) {
+              document.getElementById('firing-text').textContent = '焼成中';
+            }
+          }
+          // Phase 2: Cooling (3s - 6s)
+          else {
+            const coolProgress = (elapsed - FIRING_HEAT_DURATION) / FIRING_COOL_DURATION;
+            const coolIntensity = (1 - coolProgress) * 1.4;
+
+            [matDisplacement, matParallax, matBump].forEach(mat => {
+              mat.emissive = new THREE.Color(coolIntensity * 0.5, coolIntensity * 0.08, coolIntensity * 0.02);
+              mat.emissiveIntensity = coolIntensity;
+            });
+
+            vase.rotation.y += 0.02 * (1 - coolProgress) + 0.004;
+
+            document.getElementById('firing-text').textContent = '冷却中...';
+            document.getElementById('firing-sub').textContent = '色が定着しています';
+          }
+
+          // Capture frames for thumbnail
+          if (elapsed > FIRING_HEAT_DURATION && capturedFrames.length < 36) {
+            renderer.setRenderTarget(null);
+            renderer.render(scene, camera);
+            capturedFrames.push(renderer.domElement.toDataURL('image/jpeg', 0.7));
+          }
+
+          if (progress >= 1) {
+            isFiring = false;
+            [matDisplacement, matParallax, matBump].forEach(mat => {
+              mat.emissive = originalEmissive.clone();
+              mat.emissiveIntensity = 1;
+            });
+
+            overlay.classList.remove('active');
+
+            // Stop video recording
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+              mediaRecorder.stop();
+            }
+
+            const thumbnailData = capturedFrames.length > 0
+              ? capturedFrames[Math.floor(capturedFrames.length / 2)]
+              : renderer.domElement.toDataURL('image/jpeg', 0.7);
+
+            // Wait briefly for video to finalize, then save
+            setTimeout(() => {
+              saveToFirestore(saveData, thumbnailData, videoDataUrl);
+            }, 500);
+            return;
+          }
+
+          requestAnimationFrame(firingTick);
+        }
+
+        requestAnimationFrame(firingTick);
+      }
+
+      async function saveToFirestore(saveData, thumbnailData, videoDataUrl) {
+        const workId = 'work_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const signatureData = saveData.signatureData || null;
+
+        if (db && firebaseReady) {
+          try {
+            let thumbnailUrl = thumbnailData;
+            if (storage) {
+              try {
+                const thumbRef = storage.ref(`${GALLERY_PATH}/${workId}/thumbnail.jpg`);
+                await thumbRef.putString(thumbnailData, 'data_url');
+                thumbnailUrl = await thumbRef.getDownloadURL();
+              } catch (e) {
+                console.warn('Storage upload failed, using base64:', e);
+              }
+
+              // Upload video to Storage if available
+              if (videoDataUrl && storage) {
+                try {
+                  const videoRef = storage.ref(`${GALLERY_PATH}/${workId}/video.webm`);
+                  await videoRef.putString(videoDataUrl, 'data_url');
+                  const videoUrl = await videoRef.getDownloadURL();
+                  console.log('Video uploaded to Storage:', videoUrl);
+                } catch (e) {
+                  console.warn('Video upload failed:', e);
+                }
+              }
+            }
+
+            await db.collection(GALLERY_PATH).doc(workId).set({
+              displacementData: saveData.displacementData,
+              effectValues: saveData.effectValues,
+              vaseShape: saveData.vaseShape,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+              thumbnailUrl: thumbnailUrl,
+              mode: saveData.mode,
+              signatureData: signatureData
+            });
+
+            console.log('Saved to Firestore:', workId);
+            updateGlobalMood();
+          } catch (e) {
+            console.error('Firestore save error:', e);
+          }
+        } else {
+          console.warn('Firebase not configured, using server API only');
+        }
+
+        // Always save to server API
+        try {
+          await fetch('/api/works/' + workId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              displacementData: saveData.displacementData,
+              effectValues: saveData.effectValues,
+              vaseShape: saveData.vaseShape,
+              mode: saveData.mode,
+              thumbnailUrl: thumbnailData,
+              signatureData: signatureData
+            })
+          });
+          console.log('Saved to server API:', workId);
+        } catch (e) {
+          console.error('Server API save error:', e);
+        }
+
+        socket.emit('saveComplete', { workId, thumbnailUrl: thumbnailData });
+      }
+
+      // Listen for save event from controller
+      socket.on('save', (data) => {
+        if (!isFiring) {
+          startFiringAnimation(data);
+        }
+      });
+
+      // ══════════════════════════════════════
+      //  Gallery Mode (Viewer)
+      // ══════════════════════════════════════
+      let galleryActive = false;
+
+      async function loadGalleryWorks() {
+        if (!db || !firebaseReady) return [];
+        try {
+          const snapshot = await db.collection(GALLERY_PATH)
+            .orderBy('timestamp', 'desc')
+            .limit(50)
+            .get();
+          return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (e) {
+          console.error('Gallery load error:', e);
+          return [];
+        }
+      }
+
+      async function enterGalleryMode() {
+        if (galleryActive) return;
+        galleryActive = true;
+
+        const overlay = document.getElementById('gallery-overlay');
+        const grid = document.getElementById('gallery-grid');
+        grid.innerHTML = '';
+
+        const works = await loadGalleryWorks();
+
+        if (works.length === 0) {
+          grid.innerHTML = '<div style="color:#666;text-align:center;grid-column:1/-1;padding:60px;font-size:18px;">まだ作品がありません</div>';
+        } else {
+          works.forEach(work => {
+            const item = document.createElement('div');
+            item.className = 'gallery-item';
+            const img = document.createElement('img');
+            img.src = work.thumbnailUrl || '';
+            img.alt = work.id;
+            img.loading = 'lazy';
+            item.appendChild(img);
+            item.addEventListener('click', () => {
+              // Load this work into the viewer
+              exitGalleryMode();
+              loadWorkIntoViewer(work);
+            });
+            grid.appendChild(item);
+          });
+        }
+
+        overlay.classList.add('active');
+      }
+
+      function exitGalleryMode() {
+        if (!galleryActive) return;
+        galleryActive = false;
+        document.getElementById('gallery-overlay').classList.remove('active');
+      }
+
+      function loadWorkIntoViewer(work) {
+        // Restore vase shape
+        if (work.vaseShape) setVaseShape(work.vaseShape);
+
+        // Restore canvas texture
+        if (work.displacementData) {
+          const img = new Image();
+          img.onload = () => {
+            texCtx.clearRect(0, 0, TEX_W, TEX_H);
+            texCtx.drawImage(img, 0, 0, TEX_W, TEX_H);
+            canvasTexture.needsUpdate = true;
+            buildHeightMap();
+            buildNormalMap();
+            if (work.mode) setMode(work.mode);
+          };
+          img.src = work.displacementData;
+        }
+
+        // Restore effects
+        if (work.effectValues) {
+          const data = work.effectValues;
+          effectUniforms.uMelt.value = data.melt || 0;
+          effectUniforms.uTiltshift.value = data.tiltshift || 0;
+          effectUniforms.uBadtv.value = data.badtv || 0;
+          effectUniforms.uEdge.value = data.edge || 0;
+          effectUniforms.uSlices.value = data.slices || 0;
+          effectUniforms.uVignette.value = data.vignette || 0;
+          effectUniforms.uWobble.value = data.wobble || 0;
+          effectUniforms.uPolar.value = data.polar || 0;
+          effectUniforms.uSmear.value = data.smear || 0;
+          effectUniforms.uDot.value = data.dot || 0;
+
+          const sum = Object.values(data).reduce((a, b) => a + b, 0);
+          effectsActive = sum > 0.001;
+        }
+      }
+
+      socket.on('enterGallery', () => enterGalleryMode());
+      socket.on('exitGallery', () => exitGalleryMode());
+      socket.on('loadWork', (data) => loadWorkIntoViewer(data));
+
+      // ══════════════════════════════════════
+      //  Global Mood (感情の集積)
+      // ══════════════════════════════════════
+      let globalMoodData = {};
+
+      async function updateGlobalMood() {
+        if (!db || !firebaseReady) return;
+        try {
+          const snapshot = await db.collection(GALLERY_PATH).get();
+          const totals = { melt: 0, tiltshift: 0, badtv: 0, edge: 0, slices: 0, vignette: 0, wobble: 0, polar: 0, smear: 0, dot: 0 };
+          let count = 0;
+
+          snapshot.forEach(doc => {
+            const d = doc.data();
+            if (d.effectValues) {
+              Object.keys(totals).forEach(k => {
+                totals[k] += (d.effectValues[k] || 0);
+              });
+              count++;
+            }
+          });
+
+          if (count > 0) {
+            Object.keys(totals).forEach(k => totals[k] /= count);
+          }
+
+          globalMoodData = totals;
+          socket.emit('updateGlobalMood', totals);
+          applyGlobalMood(totals);
+        } catch (e) {
+          console.error('Global mood calculation error:', e);
+        }
+      }
+
+      function applyGlobalMood(mood) {
+        // Determine dominant emotion from global averages
+        const emotionSums = {
+          joy: (mood.melt || 0) + (mood.tiltshift || 0),
+          shock: (mood.badtv || 0) + (mood.edge || 0),
+          sad: (mood.slices || 0) + (mood.vignette || 0),
+          confuse: (mood.wobble || 0) + (mood.polar || 0),
+          fire: (mood.smear || 0) + (mood.dot || 0)
+        };
+
+        let maxEmo = 'joy', maxVal = 0;
+        Object.entries(emotionSums).forEach(([emo, val]) => {
+          if (val > maxVal) { maxVal = val; maxEmo = emo; }
+        });
+
+        const intensity = Math.min(maxVal, 0.5);
+        particleMaterial.opacity = 0.6 + intensity * 0.2;
+      }
+
+      socket.on('globalMood', (data) => {
+        globalMoodData = data;
+        applyGlobalMood(data);
+      });
+
+      // Initial global mood load
+      if (db && firebaseReady) {
+        setTimeout(updateGlobalMood, 3000);
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  AR VIEWER (for ?workId=XXX on mobile)
+    // ══════════════════════════════════════════════════════════════
+    if (role === 'arViewer') {
+      document.getElementById('ar-viewer-ui').style.display = 'flex';
+      // bodyのoverflow:hiddenを解除してスクロール可能にする
+      document.body.style.overflow = 'auto';
+      document.body.style.height = 'auto';
+
+      // ── Instagram-style Gallery: Load ALL works ──
+      const igGrid = document.getElementById('ig-grid');
+      const igFeatured = document.getElementById('ig-featured');
+      const igFeaturedWrap = document.getElementById('ig-featured-wrap');
+      const igDetailModal = document.getElementById('ig-detail-modal');
+      const igDetailVideo = document.getElementById('ig-detail-video');
+      let allWorks = [];
+      let featuredRenderer = null, featuredScene = null, featuredCamera = null;
+      let featuredVase = null, featuredAnimId = null;
+      let detailRenderer = null, detailScene = null, detailCamera = null;
+      let detailVase = null, detailAnimId = null;
+
+      const WALL_THICKNESS = 0.12;
+      const LATHE_SEGMENTS = 64;
+      const SPLINE_SAMPLES = 40;
+
+      function createVaseGeometry(shapeData) {
+        const maxH = shapeData[shapeData.length - 1].h;
+        const scale = 3.5 / maxH;
+        const outerControlPts = shapeData.map(p => new THREE.Vector2(p.r * scale, p.h * scale));
+        const outerSpline = new THREE.SplineCurve(outerControlPts);
+        const outerPts = outerSpline.getPoints(SPLINE_SAMPLES);
+        const innerPts = outerPts.map(p => new THREE.Vector2(Math.max(0.01, p.x - WALL_THICKNESS), p.y));
+        const profile = [];
+        profile.push(new THREE.Vector2(0, outerPts[0].y));
+        outerPts.forEach(p => profile.push(p.clone()));
+        profile.push(outerPts[outerPts.length - 1].clone());
+        profile.push(innerPts[innerPts.length - 1].clone());
+        for (let i = innerPts.length - 1; i >= 0; i--) profile.push(innerPts[i].clone());
+        profile.push(new THREE.Vector2(0, innerPts[0].y));
+        return new THREE.LatheGeometry(profile, LATHE_SEGMENTS);
+      }
+
+      function createMiniScene(container, work) {
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a1a);
+
+        const w = container.clientWidth || 300;
+        const h = container.clientHeight || (w * 5 / 4);
+        const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+        camera.position.set(0, 2.5, 6);
+        camera.lookAt(0, 1.5, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(w, h);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        container.innerHTML = '';
+        container.appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(4, 6, 4);
+        scene.add(dirLight);
+
+        const texCanvas = document.createElement('canvas');
+        texCanvas.width = TEX_W; texCanvas.height = TEX_H;
+        const texCtx = texCanvas.getContext('2d');
+        texCtx.fillStyle = '#fff';
+        texCtx.fillRect(0, 0, TEX_W, TEX_H);
+        const canvasTexture = new THREE.CanvasTexture(texCanvas);
+        canvasTexture.colorSpace = THREE.SRGBColorSpace;
+
+        const material = new THREE.MeshStandardMaterial({
+          color: 0xffffff, roughness: 0.35, metalness: 0.08,
+          map: canvasTexture, side: THREE.DoubleSide
+        });
+
+        const shape = potteryShapes[work.vaseShape || 'vaseA'];
+        const geom = createVaseGeometry(shape);
+        const vase = new THREE.Mesh(geom, material);
+        scene.add(vase);
+
+        if (work.displacementData) {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            texCtx.drawImage(img, 0, 0, TEX_W, TEX_H);
+            canvasTexture.needsUpdate = true;
+          };
+          img.src = work.displacementData;
+        }
+
+        return { scene, camera, renderer, vase };
+      }
+
+      // Load all works from server API + Firestore
+      async function loadAllWorks() {
+        let works = [];
+
+        try {
+          const res = await fetch('/api/works');
+          if (res.ok) {
+            const serverWorks = await res.json();
+            works = serverWorks.map(w => ({ ...w, source: 'server' }));
+          }
+        } catch (e) {
+          console.warn('Server API load failed:', e);
+        }
+
+        if (db) {
+          try {
+            if (!firebaseReady) {
+              await new Promise(resolve => {
+                const check = setInterval(() => {
+                  if (firebaseReady) { clearInterval(check); resolve(); }
+                }, 200);
+                setTimeout(() => { clearInterval(check); resolve(); }, 5000);
+              });
+            }
+            if (firebaseReady) {
+              const snapshot = await db.collection(GALLERY_PATH)
+                .orderBy('timestamp', 'desc').limit(50).get();
+              snapshot.docs.forEach(doc => {
+                const data = doc.data();
+                if (!works.find(w => w.id === doc.id)) {
+                  works.push({ id: doc.id, ...data, source: 'firestore' });
+                }
+              });
+            }
+          } catch (e) {
+            console.warn('Firestore gallery load failed:', e);
+          }
+        }
+
+        return works;
+      }
+
+      // Show featured work in 3D
+      function showFeatured(work) {
+        if (featuredAnimId) cancelAnimationFrame(featuredAnimId);
+        igFeatured.style.display = 'block';
+
+        const result = createMiniScene(igFeaturedWrap, work);
+        featuredRenderer = result.renderer;
+        featuredScene = result.scene;
+        featuredCamera = result.camera;
+        featuredVase = result.vase;
+
+        // Display: signature image or emotion label (NOT work ID)
+        const authorEl = document.getElementById('ig-featured-author');
+        const dominant = getDominantEmotion(work.effectValues);
+        const meta = EMOTION_META[dominant];
+        authorEl.textContent = `${meta.icon} ${meta.label}な作品`;
+        authorEl.style.color = meta.hex;
+
+        // Render emotion bar for featured work
+        renderEmotionBar(
+          document.getElementById('ig-featured-emotion-bar'),
+          document.getElementById('ig-featured-emotion-labels'),
+          calcEmotionFromEffects(work.effectValues)
+        );
+
+        let angle = 0;
+        function animate() {
+          featuredAnimId = requestAnimationFrame(animate);
+          featuredVase.rotation.y += 0.005;
+          angle += 0.003;
+          featuredCamera.position.x = Math.sin(angle) * 6;
+          featuredCamera.position.z = Math.cos(angle) * 6;
+          featuredCamera.lookAt(0, 1.5, 0);
+          featuredRenderer.render(featuredScene, featuredCamera);
+        }
+        animate();
+      }
+
+      // Show detail modal with 3D
+      function showDetail(work) {
+        if (detailAnimId) cancelAnimationFrame(detailAnimId);
+        igDetailModal.classList.add('active');
+
+        const result = createMiniScene(igDetailVideo, work);
+        detailRenderer = result.renderer;
+        detailScene = result.scene;
+        detailCamera = result.camera;
+        detailVase = result.vase;
+
+        const detailDominant = getDominantEmotion(work.effectValues);
+        const detailMeta = EMOTION_META[detailDominant];
+        const detailAuthorEl = document.getElementById('ig-detail-author');
+        detailAuthorEl.textContent = `${detailMeta.icon} ${detailMeta.label}な作品`;
+        detailAuthorEl.style.color = detailMeta.hex;
+
+        // Render emotion bar for detail modal
+        renderEmotionBar(
+          document.getElementById('ig-detail-emotion-bar'),
+          document.getElementById('ig-detail-emotion-labels'),
+          calcEmotionFromEffects(work.effectValues)
+        );
+
+        let angle = 0;
+        function animate() {
+          detailAnimId = requestAnimationFrame(animate);
+          detailVase.rotation.y += 0.008;
+          angle += 0.004;
+          detailCamera.position.x = Math.sin(angle) * 6;
+          detailCamera.position.z = Math.cos(angle) * 6;
+          detailCamera.lookAt(0, 1.5, 0);
+          detailRenderer.render(detailScene, detailCamera);
+        }
+        animate();
+      }
+
+      // Close detail modal
+      document.getElementById('ig-detail-close').addEventListener('click', () => {
+        igDetailModal.classList.remove('active');
+        if (detailAnimId) cancelAnimationFrame(detailAnimId);
+        igDetailVideo.innerHTML = '';
+      });
+
+      // Download from detail
+      document.getElementById('ig-detail-download').addEventListener('click', () => {
+        if (!detailRenderer) return;
+        detailRenderer.render(detailScene, detailCamera);
+        const link = document.createElement('a');
+        link.download = 'pottery_work.png';
+        link.href = detailRenderer.domElement.toDataURL('image/png');
+        link.click();
+      });
+
+      // Download from featured
+      document.getElementById('ig-download-btn').addEventListener('click', () => {
+        if (!featuredRenderer) return;
+        featuredRenderer.render(featuredScene, featuredCamera);
+        const link = document.createElement('a');
+        link.download = 'pottery_featured.png';
+        link.href = featuredRenderer.domElement.toDataURL('image/png');
+        link.click();
+      });
+
+      // Render grid
+      function renderGrid(works) {
+        igGrid.innerHTML = '';
+        if (works.length === 0) {
+          igGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#8e8e8e;font-size:14px;">まだ作品がありません</div>';
+          return;
+        }
+
+        works.forEach((work, idx) => {
+          const item = document.createElement('div');
+          item.className = 'ig-grid-item';
+
+          // Add emotion color border
+          if (work.effectValues) {
+            const dominant = getDominantEmotion(work.effectValues);
+            item.classList.add('has-emotion');
+            item.style.setProperty('--emotion-color', EMOTION_META[dominant].hex);
+          }
+
+          if (work.thumbnailUrl) {
+            const img = document.createElement('img');
+            img.src = work.thumbnailUrl;
+            img.alt = '作品';
+            img.loading = 'lazy';
+            item.appendChild(img);
+          } else {
+            item.style.background = '#ddd';
+          }
+
+          // Show dominant emotion icon instead of just signature mark
+          const emotionBadge = document.createElement('div');
+          emotionBadge.className = 'grid-sign';
+          if (work.effectValues) {
+            const dominant = getDominantEmotion(work.effectValues);
+            emotionBadge.textContent = EMOTION_META[dominant].icon;
+          }
+          item.appendChild(emotionBadge);
+
+          item.addEventListener('click', () => showDetail(work));
+          igGrid.appendChild(item);
+        });
+      }
+
+      // Initialize gallery
+      async function initGallery() {
+        igGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#8e8e8e;">読み込み中...</div>';
+
+        allWorks = await loadAllWorks();
+        document.getElementById('ig-works-count').textContent = allWorks.length;
+
+        const uniqueArtists = new Set(allWorks.map(w => w.id)).size;
+        document.getElementById('ig-artists-count').textContent = uniqueArtists;
+
+        // Calculate aggregate emotion for ALL works
+        const allEmotionTotals = { joy: 0, shock: 0, sad: 0, confuse: 0, fire: 0 };
+        let worksWithEffects = 0;
+        allWorks.forEach(w => {
+          if (w.effectValues) {
+            worksWithEffects++;
+            const emo = calcEmotionFromEffects(w.effectValues);
+            Object.keys(allEmotionTotals).forEach(k => allEmotionTotals[k] += emo[k]);
+          }
+        });
+        if (worksWithEffects > 0) {
+          Object.keys(allEmotionTotals).forEach(k => allEmotionTotals[k] /= worksWithEffects);
+        }
+        renderEmotionBar(
+          document.getElementById('ig-all-emotion-bar'),
+          document.getElementById('ig-all-emotion-labels'),
+          allEmotionTotals
+        );
+
+        // Show the specific workId as featured if present
+        if (workId) {
+          const myWork = allWorks.find(w => w.id === workId);
+          if (myWork) {
+            showFeatured(myWork);
+            const vaseType = myWork.vaseShape || 'vaseA';
+            const avatarImg = vaseType === 'vaseB' ? '/VASE/vase02.png' : '/VASE/vae01.png';
+            document.getElementById('ig-avatar-img').src = avatarImg;
+          }
+        }
+
+        renderGrid(allWorks);
+      }
+
+      initGallery();
+    }
+  </script>
+</body>
+
+</html>
