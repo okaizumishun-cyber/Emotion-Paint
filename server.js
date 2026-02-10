@@ -8,6 +8,13 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// Define PORT early so it can be used in routes
+const PORT = process.env.PORT || 3000;
+
+// Instagram API credentials
+const INSTAGRAM_ACCESS_TOKEN = process.env.INSTAGRAM_ACCESS_TOKEN;
+const INSTAGRAM_ACCOUNT_ID = process.env.INSTAGRAM_ACCOUNT_ID;
+
 // JSON body parser (50MB limit for base64 images)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -18,10 +25,37 @@ app.use(express.static(path.join(__dirname, 'public')));
 const works = new Map();
 
 // Save a work
-app.post('/api/works/:id', (req, res) => {
+app.post('/api/works/:id', async (req, res) => {
   const id = req.params.id;
-  works.set(id, { ...req.body, savedAt: Date.now() });
+  const workData = { ...req.body, savedAt: Date.now() };
+  works.set(id, workData);
   console.log(`Work saved: ${id} (total: ${works.size})`);
+
+  // Auto-post to Instagram if configured
+  if (INSTAGRAM_ACCESS_TOKEN && INSTAGRAM_ACCOUNT_ID && workData.thumbnailUrl) {
+    try {
+      console.log('Attempting to post to Instagram...');
+      const instagramResponse = await fetch(`http://localhost:${PORT}/api/instagram/post`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl: workData.thumbnailUrl,
+          caption: `新しい作品が完成しました！🎨✨\n\n#EmotionPaint #陶芸 #アート #感情を描く壺\n\n@atelier_kanna1212`
+        })
+      });
+
+      const instagramResult = await instagramResponse.json();
+      if (instagramResult.success) {
+        console.log('✅ Successfully posted to Instagram:', instagramResult.instagramPostId);
+        workData.instagramPostId = instagramResult.instagramPostId;
+      } else {
+        console.warn('⚠️ Instagram post failed:', instagramResult.error);
+      }
+    } catch (error) {
+      console.error('❌ Instagram auto-post error:', error.message);
+    }
+  }
+
   res.json({ ok: true, id });
 });
 
@@ -44,9 +78,6 @@ app.get('/api/works', (req, res) => {
 // ══════════════════════════════════════
 //  Instagram Auto-Post API
 // ══════════════════════════════════════
-const INSTAGRAM_ACCESS_TOKEN = process.env.INSTAGRAM_ACCESS_TOKEN;
-const INSTAGRAM_ACCOUNT_ID = process.env.INSTAGRAM_ACCOUNT_ID;
-
 app.post('/api/instagram/post', async (req, res) => {
   if (!INSTAGRAM_ACCESS_TOKEN || !INSTAGRAM_ACCOUNT_ID) {
     return res.status(500).json({
@@ -151,7 +182,6 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
   console.log(`Controller: http://localhost:${PORT}?role=controller`);
