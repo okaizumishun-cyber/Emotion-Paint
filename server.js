@@ -32,24 +32,47 @@ app.post('/api/works/:id', async (req, res) => {
   console.log(`Work saved: ${id} (total: ${works.size})`);
 
   // Auto-post to Instagram if configured
-  if (INSTAGRAM_ACCESS_TOKEN && INSTAGRAM_ACCOUNT_ID && workData.thumbnailUrl) {
+  if (INSTAGRAM_ACCESS_TOKEN && INSTAGRAM_ACCOUNT_ID) {
     try {
-      console.log('Attempting to post to Instagram...');
-      const instagramResponse = await fetch(`http://localhost:${PORT}/api/instagram/post`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          imageUrl: workData.thumbnailUrl,
-          caption: `新しい作品が完成しました！🎨✨\n\n#EmotionPaint #陶芸 #アート #感情を描く壺\n\n@atelier_kanna1212`
-        })
-      });
+      // カルーセル投稿（複数画像）の場合
+      if (workData.imageUrls && workData.imageUrls.length > 1) {
+        console.log('Attempting to post carousel to Instagram...');
+        const instagramResponse = await fetch(`http://localhost:${PORT}/api/instagram/carousel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageUrls: workData.imageUrls,
+            caption: `新しい作品が完成しました！🎨✨\n\n4方向からご覧ください 👀\n\n#EmotionPaint #陶芸 #アート #感情を描く壺\n\n@atelier_kanna1212`
+          })
+        });
 
-      const instagramResult = await instagramResponse.json();
-      if (instagramResult.success) {
-        console.log('✅ Successfully posted to Instagram:', instagramResult.instagramPostId);
-        workData.instagramPostId = instagramResult.instagramPostId;
-      } else {
-        console.warn('⚠️ Instagram post failed:', instagramResult.error);
+        const instagramResult = await instagramResponse.json();
+        if (instagramResult.success) {
+          console.log('✅ Successfully posted carousel to Instagram:', instagramResult.instagramPostId);
+          workData.instagramPostId = instagramResult.instagramPostId;
+        } else {
+          console.warn('⚠️ Instagram carousel post failed:', instagramResult.error);
+        }
+      }
+      // 単一画像投稿の場合（フォールバック）
+      else if (workData.thumbnailUrl) {
+        console.log('Attempting to post single image to Instagram...');
+        const instagramResponse = await fetch(`http://localhost:${PORT}/api/instagram/post`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageUrl: workData.thumbnailUrl,
+            caption: `新しい作品が完成しました！🎨✨\n\n#EmotionPaint #陶芸 #アート #感情を描く壺\n\n@atelier_kanna1212`
+          })
+        });
+
+        const instagramResult = await instagramResponse.json();
+        if (instagramResult.success) {
+          console.log('✅ Successfully posted to Instagram:', instagramResult.instagramPostId);
+          workData.instagramPostId = instagramResult.instagramPostId;
+        } else {
+          console.warn('⚠️ Instagram post failed:', instagramResult.error);
+        }
       }
     } catch (error) {
       console.error('❌ Instagram auto-post error:', error.message);
@@ -78,6 +101,106 @@ app.get('/api/works', (req, res) => {
 // ══════════════════════════════════════
 //  Instagram Auto-Post API
 // ══════════════════════════════════════
+
+// Instagram Carousel Post API (複数画像投稿)
+app.post('/api/instagram/carousel', async (req, res) => {
+  if (!INSTAGRAM_ACCESS_TOKEN || !INSTAGRAM_ACCOUNT_ID) {
+    return res.status(500).json({
+      error: 'Instagram API not configured'
+    });
+  }
+
+  try {
+    const { imageUrls, caption } = req.body;
+
+    if (!imageUrls || imageUrls.length === 0) {
+      return res.status(400).json({ error: 'imageUrls array is required' });
+    }
+
+    console.log(`Creating carousel with ${imageUrls.length} images...`);
+
+    // Step 1: 各画像のメディアコンテナを作成
+    const mediaIds = [];
+    for (const imageUrl of imageUrls) {
+      const containerResponse = await fetch(
+        `https://graph.facebook.com/v18.0/${INSTAGRAM_ACCOUNT_ID}/media`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image_url: imageUrl,
+            is_carousel_item: true,
+            access_token: INSTAGRAM_ACCESS_TOKEN
+          })
+        }
+      );
+
+      const containerData = await containerResponse.json();
+      if (!containerData.id) {
+        console.error('Failed to create media container:', containerData);
+        return res.status(500).json({ error: 'Failed to create media container', details: containerData });
+      }
+
+      mediaIds.push(containerData.id);
+      console.log(`Media container created: ${containerData.id}`);
+    }
+
+    // Step 2: カルーセルコンテナを作成
+    const carouselResponse = await fetch(
+      `https://graph.facebook.com/v18.0/${INSTAGRAM_ACCOUNT_ID}/media`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          media_type: 'CAROUSEL',
+          children: mediaIds,
+          caption: caption || 'Emotion Paint - 感情を描く壺 🎨',
+          access_token: INSTAGRAM_ACCESS_TOKEN
+        })
+      }
+    );
+
+    const carouselData = await carouselResponse.json();
+    if (!carouselData.id) {
+      console.error('Failed to create carousel:', carouselData);
+      return res.status(500).json({ error: 'Failed to create carousel', details: carouselData });
+    }
+
+    console.log(`Carousel container created: ${carouselData.id}`);
+
+    // Step 3: カルーセルを公開
+    const publishResponse = await fetch(
+      `https://graph.facebook.com/v18.0/${INSTAGRAM_ACCOUNT_ID}/media_publish`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          creation_id: carouselData.id,
+          access_token: INSTAGRAM_ACCESS_TOKEN
+        })
+      }
+    );
+
+    const publishData = await publishResponse.json();
+    if (!publishData.id) {
+      console.error('Failed to publish carousel:', publishData);
+      return res.status(500).json({ error: 'Failed to publish carousel', details: publishData });
+    }
+
+    console.log('✅ Successfully posted carousel to Instagram:', publishData.id);
+    res.json({
+      success: true,
+      instagramPostId: publishData.id,
+      message: 'Carousel posted to Instagram successfully'
+    });
+
+  } catch (error) {
+    console.error('Instagram carousel post error:', error);
+    res.status(500).json({ error: 'Instagram carousel posting failed', message: error.message });
+  }
+});
+
+// Instagram Single Image Post API
 app.post('/api/instagram/post', async (req, res) => {
   if (!INSTAGRAM_ACCESS_TOKEN || !INSTAGRAM_ACCOUNT_ID) {
     return res.status(500).json({

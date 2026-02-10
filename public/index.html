@@ -2872,7 +2872,7 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         vaseEffectUniforms.uTime.value = time;
 
         // Vase rotation (increased speed)
-        vase.rotation.y += 0.012;
+        vase.rotation.y += 0.025;
 
         // Cinematic camera orbit (always active)
         cameraAngle += 0.003;
@@ -2969,7 +2969,13 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         document.getElementById('firing-text').textContent = '焼き上げ中...';
         document.getElementById('firing-sub').textContent = '壺を窯で焼いています';
 
-        // Start capture frames for thumbnail
+        // 4方向の画像を保存する配列
+        const capturedImages = [];
+        const captureAngles = [0, Math.PI / 2, Math.PI, Math.PI * 3 / 2]; // 0°, 90°, 180°, 270°
+        let currentCaptureIndex = 0;
+        let baseRotation = vase.rotation.y; // 開始時の回転角度を記録
+
+        // Start capture frames for thumbnail (legacy)
         const capturedFrames = [];
 
         // ── Video Recording (MediaRecorder on WebGL canvas) ──
