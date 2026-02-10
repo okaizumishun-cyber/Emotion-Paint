@@ -65,7 +65,7 @@
     #top-actions {
       position: fixed;
       top: 10px;
-      right: 12px;
+      right: 12このpx;
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -649,6 +649,13 @@
       font-size: 14px;
       color: #888;
       margin-bottom: 24px;
+    }
+
+    #qr-popup .qr-instagram-link {
+      font-size: 16px;
+      color: #FF3ED4;
+      font-weight: 600;
+      margin-bottom: 16px;
     }
 
     #qr-popup #qr-canvas-container {
@@ -2069,20 +2076,21 @@
         const qrContainer = document.getElementById('qr-canvas-container');
         qrContainer.innerHTML = '';
 
-        const workUrl = `${location.origin}?workId=${workId}`;
+        // QR code points to Instagram account instead of work URL
+        const instagramUrl = 'https://www.instagram.com/atelier_kanna1212/';
 
         if (typeof QRious !== 'undefined') {
           const qrCanvas = document.createElement('canvas');
           qrContainer.appendChild(qrCanvas);
           new QRious({
             element: qrCanvas,
-            value: workUrl,
+            value: instagramUrl,
             size: 200,
             level: 'M'
           });
         } else {
           const qrImg = document.createElement('img');
-          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(workUrl)}`;
+          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(instagramUrl)}`;
           qrImg.alt = 'QR Code';
           qrImg.style.width = '200px';
           qrImg.style.height = '200px';
@@ -2863,8 +2871,8 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         const time = performance.now() * 0.001;
         vaseEffectUniforms.uTime.value = time;
 
-        // Vase rotation
-        vase.rotation.y += 0.004;
+        // Vase rotation (increased speed)
+        vase.rotation.y += 0.012;
 
         // Cinematic camera orbit (always active)
         cameraAngle += 0.003;
@@ -3320,12 +3328,12 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         try {
           const res = await fetch('/api/works/' + workId);
           if (res.ok) work = await res.json();
-        } catch(e) { console.warn('Server API load failed:', e); }
+        } catch (e) { console.warn('Server API load failed:', e); }
         if (!work && db && firebaseReady) {
           try {
             const doc = await db.collection(GALLERY_PATH).doc(workId).get();
             if (doc.exists) work = { id: doc.id, ...doc.data() };
-          } catch(e) { console.warn('Firestore load failed:', e); }
+          } catch (e) { console.warn('Firestore load failed:', e); }
         }
         return work;
       }
@@ -3369,7 +3377,7 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
           // フォールバック: Web Share API
           setTimeout(() => {
             if (navigator.share) {
-              navigator.share({ title: 'Emotion Paint', url: location.href }).catch(() => {});
+              navigator.share({ title: 'Emotion Paint', url: location.href }).catch(() => { });
             }
           }, 2000);
         });

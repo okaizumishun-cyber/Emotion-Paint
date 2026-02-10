@@ -4,3 +4,5 @@ firebase-debug.log
 .DS_Store
 # Windows用の特殊なゴミファイルを除外
 nul
+# Environment variables (contains sensitive data)
+.env
