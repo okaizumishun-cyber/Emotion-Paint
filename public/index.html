@@ -2496,131 +2496,133 @@
           shader.vertexShader = shader.vertexShader.replace(
             '#include <common>',
             `#include <common>
-            uniform float uTime;
-            uniform float uWobble;
-            uniform float uMelt;
-            `
+uniform float uTime;
+uniform float uWobble;
+uniform float uMelt;
+`
           );
           shader.vertexShader = shader.vertexShader.replace(
             '#include <begin_vertex>',
             `#include <begin_vertex>
-            if (uWobble > 0.01) {
-              float wAmt = uWobble * 0.15;
-              transformed.x += wAmt * sin(transformed.y * 8.0 + uTime * 2.5);
-              transformed.z += wAmt * cos(transformed.y * 6.0 + uTime * 1.8);
-            }
-            if (uMelt > 0.01) {
-              float mAmt = uMelt * 0.1;
-              float meltFactor = smoothstep(0.0, 3.5, transformed.y);
-              transformed.x *= 1.0 + mAmt * meltFactor * sin(uTime * 1.2 + transformed.y * 3.0);
-              transformed.z *= 1.0 + mAmt * meltFactor * cos(uTime * 0.8 + transformed.y * 2.0);
-              transformed.y -= mAmt * meltFactor * meltFactor * 0.5;
-            }
-            `
+if (uWobble > 0.01) {
+  float wAmt = uWobble * 0.15;
+  transformed.x += wAmt * sin(transformed.y * 8.0 + uTime * 2.5);
+  transformed.z += wAmt * cos(transformed.y * 6.0 + uTime * 1.8);
+}
+if (uMelt > 0.01) {
+  float mAmt = uMelt * 0.1;
+  float meltFactor = smoothstep(0.0, 3.5, transformed.y);
+  transformed.x *= 1.0 + mAmt * meltFactor * sin(uTime * 1.2 + transformed.y * 3.0);
+  transformed.z *= 1.0 + mAmt * meltFactor * cos(uTime * 0.8 + transformed.y * 2.0);
+  transformed.y -= mAmt * meltFactor * meltFactor * 0.5;
+}
+`
           );
 
           // ── Fragment shader: texture effects on vase surface ──
           shader.fragmentShader = shader.fragmentShader.replace(
             '#include <common>',
             `#include <common>
-            uniform float uTime;
-            uniform float uMelt, uTiltshift, uBadtv, uEdge;
-            uniform float uSlices, uVignette, uWobble, uPolar, uSmear, uDot;
-            float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
-            `
+uniform float uTime;
+uniform float uMelt, uTiltshift, uBadtv, uEdge;
+uniform float uSlices, uVignette, uWobble, uPolar, uSmear, uDot;
+float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+`
           );
 
           shader.fragmentShader = shader.fragmentShader.replace(
             '#include <map_fragment>',
             `
-            #ifdef USE_MAP
-            vec2 mapUv = vMapUv;
+#ifdef USE_MAP
+  vec2 mapUv = vMapUv;
 
-            if (uWobble > 0.01) {
-              float w = uWobble * 0.04;
-              mapUv.x += w * sin(mapUv.y * 18.0 + uTime * 2.5);
-              mapUv.y += w * cos(mapUv.x * 18.0 + uTime * 1.8);
-            }
-            if (uMelt > 0.01) {
-              float m = uMelt * 0.05;
-              mapUv.y += m * sin(mapUv.x * 12.0 + uTime * 1.2) * sin(mapUv.y * 6.0 + uTime * 0.8);
-              mapUv.x += m * 0.5 * cos(mapUv.y * 10.0 + uTime * 2.0);
-            }
-            if (uBadtv > 0.01) {
-              float n = vaseHash(vec2(floor(mapUv.y * 80.0), floor(uTime * 15.0)));
-              float jitter = (n - 0.5) * uBadtv * 0.08;
-              float band = step(0.97 - uBadtv * 0.05, vaseHash(vec2(floor(mapUv.y * 30.0), floor(uTime * 8.0))));
-              mapUv.x += jitter + band * (n - 0.5) * uBadtv * 0.15;
-            }
-            if (uSlices > 0.01) {
-              float si = floor(mapUv.y * 25.0);
-              float off = sin(si * 4.3 + uTime * 0.8) * uSlices * 0.06;
-              mapUv.x += off * step(0.4, vaseHash(vec2(si, 1.0)));
-            }
+  if (uWobble > 0.01) {
+    float w = uWobble * 0.04;
+    mapUv.x += w * sin(mapUv.y * 18.0 + uTime * 2.5);
+    mapUv.y += w * cos(mapUv.x * 18.0 + uTime * 1.8);
+  }
+  if (uMelt > 0.01) {
+    float m = uMelt * 0.05;
+    mapUv.y += m * sin(mapUv.x * 12.0 + uTime * 1.2) * sin(mapUv.y * 6.0 + uTime * 0.8);
+    mapUv.x += m * 0.5 * cos(mapUv.y * 10.0 + uTime * 2.0);
+  }
+  if (uBadtv > 0.01) {
+    float n = vaseHash(vec2(floor(mapUv.y * 80.0), floor(uTime * 15.0)));
+    float jitter = (n - 0.5) * uBadtv * 0.08;
+    float band = step(0.97 - uBadtv * 0.05, vaseHash(vec2(floor(mapUv.y * 30.0), floor(uTime * 8.0))));
+    mapUv.x += jitter + band * (n - 0.5) * uBadtv * 0.15;
+  }
+  if (uSlices > 0.01) {
+    float si = floor(mapUv.y * 25.0);
+    float off = sin(si * 4.3 + uTime * 0.8) * uSlices * 0.06;
+    mapUv.x += off * step(0.4, vaseHash(vec2(si, 1.0)));
+  }
 
-            vec4 sampledDiffuseColor;
-            if (uSmear > 0.01) {
-              vec4 smearSum = vec4(0.0);
-              float sd = uSmear * 0.025;
-              for (float i = 0.0; i < 10.0; i++) {
-                smearSum += texture2D(map, mapUv - vec2(sd * i / 10.0, sd * i / 10.0 * 0.3));
-              }
-              sampledDiffuseColor = smearSum / 10.0;
-            } else {
-              sampledDiffuseColor = texture2D(map, mapUv);
-            }
+  vec4 sampledDiffuseColor = texture2D(map, mapUv);
 
-            if (uBadtv > 0.01) {
-              float sp = uBadtv * 0.012;
-              sampledDiffuseColor.r = texture2D(map, mapUv + vec2(sp, 0.0)).r;
-              sampledDiffuseColor.b = texture2D(map, mapUv - vec2(sp, 0.0)).b;
-            }
-            if (uTiltshift > 0.01) {
-              float bz = smoothstep(0.15, 0.9, abs(mapUv.y - 0.5) * 2.0) * uTiltshift;
-              if (bz > 0.01) {
-                vec4 bl = vec4(0.0);
-                for (float i = -4.0; i <= 4.0; i++) bl += texture2D(map, mapUv + vec2(0.0, i * 0.005 * bz));
-                sampledDiffuseColor = mix(sampledDiffuseColor, bl / 9.0, bz * 0.8);
-              }
-            }
-            if (uEdge > 0.01) {
-              float e = 1.0 / 480.0;
-              vec3 etl = texture2D(map, mapUv + vec2(-e, -e)).rgb;
-              vec3 etr = texture2D(map, mapUv + vec2(e, -e)).rgb;
-              vec3 ebl = texture2D(map, mapUv + vec2(-e, e)).rgb;
-              vec3 ebr = texture2D(map, mapUv + vec2(e, e)).rgb;
-              vec3 gx = -etl + etr - ebl + ebr;
-              vec3 gy = -etl - etr + ebl + ebr;
-              sampledDiffuseColor.rgb += sqrt(gx * gx + gy * gy) * uEdge * 2.0;
-            }
-            if (uBadtv > 0.01) {
-              float sc = sin(mapUv.y * 480.0 * 3.14159) * 0.5 + 0.5;
-              sampledDiffuseColor.rgb *= 1.0 - uBadtv * 0.25 * (1.0 - sc);
-            }
-            if (uVignette > 0.01) {
-              float d = length(mapUv - 0.5) * 1.6;
-              sampledDiffuseColor.rgb *= 1.0 - smoothstep(0.2, 1.3, d) * uVignette * 0.85;
-            }
-            if (uPolar > 0.01) {
-              vec2 c = mapUv - 0.5;
-              float ang = atan(c.y, c.x), rad = length(c);
-              float ps = uPolar * 0.12 + 0.005;
-              vec2 pu = vec2(cos(floor(ang / ps) * ps), sin(floor(ang / ps) * ps)) * floor(rad / ps) * ps + 0.5;
-              sampledDiffuseColor = mix(sampledDiffuseColor, texture2D(map, pu), uPolar * 0.65);
-            }
-            if (uDot > 0.01) {
-              float ds = mix(3.0, 14.0, uDot);
-              vec2 cc = (floor(mapUv * 480.0 / ds) + 0.5) * ds / 480.0;
-              vec4 dc = texture2D(map, cc);
-              float lm = dot(dc.rgb, vec3(0.299, 0.587, 0.114));
-              float dd = length(fract(mapUv * 480.0 / ds) - 0.5);
-              float dm = 1.0 - smoothstep(lm * 0.45, lm * 0.45 + 0.05, dd);
-              sampledDiffuseColor = mix(sampledDiffuseColor, vec4(dc.rgb * dm, 1.0), uDot * 0.55);
-            }
+  if (uSmear > 0.01) {
+    vec4 smearSum = vec4(0.0);
+    float sd = uSmear * 0.025;
+    for (float i = 0.0; i < 10.0; i += 1.0) {
+      smearSum += texture2D(map, mapUv - vec2(sd * i / 10.0, sd * i / 10.0 * 0.3));
+    }
+    sampledDiffuseColor = smearSum / 10.0;
+  }
 
-            diffuseColor *= sampledDiffuseColor;
-            #endif
-            `
+  if (uBadtv > 0.01) {
+    float sp = uBadtv * 0.012;
+    sampledDiffuseColor.r = texture2D(map, mapUv + vec2(sp, 0.0)).r;
+    sampledDiffuseColor.b = texture2D(map, mapUv - vec2(sp, 0.0)).b;
+  }
+  if (uTiltshift > 0.01) {
+    float bz = smoothstep(0.15, 0.9, abs(mapUv.y - 0.5) * 2.0) * uTiltshift;
+    if (bz > 0.01) {
+      vec4 bl = vec4(0.0);
+      for (float i = -4.0; i <= 4.0; i += 1.0) {
+        bl += texture2D(map, mapUv + vec2(0.0, i * 0.005 * bz));
+      }
+      sampledDiffuseColor = mix(sampledDiffuseColor, bl / 9.0, bz * 0.8);
+    }
+  }
+  if (uEdge > 0.01) {
+    float e = 1.0 / 480.0;
+    vec3 etl = texture2D(map, mapUv + vec2(-e, -e)).rgb;
+    vec3 etr = texture2D(map, mapUv + vec2(e, -e)).rgb;
+    vec3 ebl = texture2D(map, mapUv + vec2(-e, e)).rgb;
+    vec3 ebr = texture2D(map, mapUv + vec2(e, e)).rgb;
+    vec3 gx = -etl + etr - ebl + ebr;
+    vec3 gy = -etl - etr + ebl + ebr;
+    sampledDiffuseColor.rgb += sqrt(gx * gx + gy * gy) * uEdge * 2.0;
+  }
+  if (uBadtv > 0.01) {
+    float sc = sin(mapUv.y * 480.0 * 3.14159) * 0.5 + 0.5;
+    sampledDiffuseColor.rgb *= 1.0 - uBadtv * 0.25 * (1.0 - sc);
+  }
+  if (uVignette > 0.01) {
+    float d = length(mapUv - 0.5) * 1.6;
+    sampledDiffuseColor.rgb *= 1.0 - smoothstep(0.2, 1.3, d) * uVignette * 0.85;
+  }
+  if (uPolar > 0.01) {
+    vec2 c = mapUv - 0.5;
+    float ang = atan(c.y, c.x);
+    float rad = length(c);
+    float ps = uPolar * 0.12 + 0.005;
+    vec2 pu = vec2(cos(floor(ang / ps) * ps), sin(floor(ang / ps) * ps)) * floor(rad / ps) * ps + 0.5;
+    sampledDiffuseColor = mix(sampledDiffuseColor, texture2D(map, pu), uPolar * 0.65);
+  }
+  if (uDot > 0.01) {
+    float ds = mix(3.0, 14.0, uDot);
+    vec2 cc = (floor(mapUv * 480.0 / ds) + 0.5) * ds / 480.0;
+    vec4 dc = texture2D(map, cc);
+    float lm = dot(dc.rgb, vec3(0.299, 0.587, 0.114));
+    float dd = length(fract(mapUv * 480.0 / ds) - 0.5);
+    float dm = 1.0 - smoothstep(lm * 0.45, lm * 0.45 + 0.05, dd);
+    sampledDiffuseColor = mix(sampledDiffuseColor, vec4(dc.rgb * dm, 1.0), uDot * 0.55);
+  }
+
+  diffuseColor *= sampledDiffuseColor;
+#endif
+`
           );
         };
         material.customProgramCacheKey = () => 'vaseEffects_' + material.uuid;
@@ -2800,6 +2802,7 @@
 
       socket.on('draw', (data) => {
         onActivity();
+        console.log('[Viewer] draw event received, dataURL length:', typeof data === 'string' ? data.length : (data.dataURL ? data.dataURL.length : 0));
         const dataURL = typeof data === 'string' ? data : data.dataURL;
         const mode = typeof data === 'object' && data.mode ? data.mode : currentMode;
         const vaseShape = typeof data === 'object' && data.vaseShape ? data.vaseShape : 'vaseA';
@@ -2813,7 +2816,9 @@
           buildNormalMap();
           setMode(mode);
           setVaseShape(vaseShape);
+          console.log('[Viewer] texture updated, mode:', mode, 'vaseShape:', vaseShape);
         };
+        img.onerror = (e) => console.error('[Viewer] draw image load failed:', e);
         img.src = dataURL;
       });
 
