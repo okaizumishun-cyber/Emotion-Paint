@@ -667,61 +667,6 @@
       cursor: pointer;
     }
 
-    /* ── Gallery Mode ── */
-    #gallery-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 2500;
-      display: none;
-      background: #111;
-      overflow: hidden;
-    }
-
-    #gallery-overlay.active {
-      display: block;
-    }
-
-    #gallery-overlay .gallery-title {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-family: 'Zen Kaku Gothic New', sans-serif;
-      font-size: 20px;
-      font-weight: 700;
-      color: rgba(255, 255, 255, 0.6);
-      letter-spacing: 4px;
-      z-index: 10;
-    }
-
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 16px;
-      padding: 80px 40px 40px;
-      max-height: 100vh;
-      overflow-y: auto;
-    }
-
-    .gallery-item {
-      border-radius: 12px;
-      overflow: hidden;
-      background: #222;
-      cursor: pointer;
-      transition: transform 0.3s;
-      aspect-ratio: 1;
-    }
-
-    .gallery-item:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 30px rgba(255, 62, 212, 0.3);
-    }
-
-    .gallery-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
 
     /* ── Sign Overlay (Controller) ── */
     #sign-overlay {
@@ -794,263 +739,95 @@
       color: #fff;
     }
 
-    /* ── Mobile Gallery (Instagram-style) ── */
+    /* ── Share Page (replaces gallery) ── */
     #ar-viewer-ui {
       display: none;
       width: 100vw;
       min-height: 100vh;
-      background: #fff;
+      background: #fafafa;
       flex-direction: column;
-      overflow-y: auto;
-      overflow-x: hidden;
-    }
-
-    /* Header */
-    .ig-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: #fff;
-      border-bottom: 1px solid #dbdbdb;
-      padding: 12px 16px;
-      display: flex;
       align-items: center;
-      justify-content: center;
     }
 
-    .ig-header-title {
-      font-family: 'Zen Kaku Gothic New', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      color: #262626;
-    }
-
-    /* Profile area */
-    .ig-profile {
+    .share-page {
+      max-width: 480px;
+      width: 100%;
       padding: 20px 16px;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 24px;
-      border-bottom: 1px solid #dbdbdb;
+      gap: 20px;
     }
 
-    .ig-avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      border: 3px solid #FF3ED4;
-      padding: 3px;
+    .share-header {
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 22px;
+      font-weight: 900;
+      color: #262626;
+      text-align: center;
+      padding: 16px 0;
+    }
+
+    .share-preview {
+      width: 100%;
+      aspect-ratio: 1;
+      background: #1a1a1a;
+      border-radius: 12px;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
-      overflow: hidden;
-      background: #fafafa;
     }
 
-    .ig-avatar img {
+    .share-preview img {
       width: 100%;
       height: 100%;
-      border-radius: 50%;
       object-fit: cover;
     }
 
-    .ig-stats {
-      display: flex;
-      gap: 24px;
-      flex: 1;
-      justify-content: center;
-    }
-
-    .ig-stat {
-      text-align: center;
-    }
-
-    .ig-stat-num {
-      font-size: 18px;
-      font-weight: 700;
-      color: #262626;
-      display: block;
-    }
-
-    .ig-stat-label {
-      font-size: 12px;
-      color: #8e8e8e;
-    }
-
-    /* Featured work (currently viewed) */
-    .ig-featured {
-      padding: 0;
-      border-bottom: 1px solid #dbdbdb;
-    }
-
-    .ig-featured-wrap {
+    .share-emotion {
       width: 100%;
-      aspect-ratio: 4/5;
-      background: #1a1a1a;
-      position: relative;
-      overflow: hidden;
+      padding: 12px 0;
     }
 
-    .ig-featured-wrap canvas {
-      width: 100% !important;
-      height: 100% !important;
-    }
-
-    .ig-featured-info {
-      padding: 12px 16px;
+    .share-actions {
+      width: 100%;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .ig-featured-author {
-      font-size: 14px;
-      font-weight: 600;
-      color: #262626;
-    }
-
-    .ig-featured-actions {
-      display: flex;
+      flex-direction: column;
       gap: 12px;
     }
 
-    .ig-action-btn {
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-family: 'M PLUS Rounded 1c', sans-serif;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid #dbdbdb;
-      background: #fff;
-      color: #262626;
-    }
-
-    .ig-action-btn.primary {
-      background: #0095f6;
-      color: #fff;
-      border-color: #0095f6;
-    }
-
-    /* Grid section */
-    .ig-grid-header {
-      padding: 12px 16px;
-      border-bottom: 1px solid #dbdbdb;
-      display: flex;
-      justify-content: center;
-    }
-
-    .ig-grid-tab {
-      font-size: 12px;
-      font-weight: 600;
-      color: #262626;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      padding: 8px 0;
-      border-top: 2px solid #262626;
-    }
-
-    .ig-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2px;
-      padding: 2px;
-    }
-
-    .ig-grid-item {
-      aspect-ratio: 4/5;
-      overflow: hidden;
-      cursor: pointer;
-      position: relative;
-      background: #fafafa;
-    }
-
-    .ig-grid-item img {
+    .share-btn {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
       transition: opacity 0.2s;
     }
 
-    .ig-grid-item:active img {
-      opacity: 0.7;
+    .share-btn:active {
+      opacity: 0.8;
     }
 
-    .ig-grid-item .grid-sign {
-      position: absolute;
-      bottom: 4px;
-      right: 6px;
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.8);
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-    }
-
-    /* Detail modal */
-    #ig-detail-modal {
-      position: fixed;
-      inset: 0;
-      z-index: 5000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.85);
-    }
-
-    #ig-detail-modal.active {
-      display: flex;
-    }
-
-    .ig-detail-box {
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      max-width: 480px;
-      width: 95%;
-    }
-
-    .ig-detail-video {
-      width: 100%;
-      aspect-ratio: 4/5;
-      background: #1a1a1a;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .ig-detail-video canvas {
-      width: 100% !important;
-      height: 100% !important;
-    }
-
-    .ig-detail-info {
-      padding: 14px 16px;
-    }
-
-    .ig-detail-author {
-      font-size: 14px;
-      font-weight: 600;
-      color: #262626;
-    }
-
-    .ig-detail-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .ig-detail-close {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.6);
+    .share-btn.instagram {
+      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
       color: #fff;
-      border: none;
-      font-size: 18px;
-      cursor: pointer;
-      z-index: 10;
+    }
+
+    .share-btn.download {
+      background: #262626;
+      color: #fff;
+    }
+
+    .share-message {
+      font-size: 14px;
+      color: #8e8e8e;
+      text-align: center;
+      min-height: 20px;
     }
 
     /* ── Emotion Bar (shared) ── */
@@ -1276,67 +1053,22 @@
 
   <!-- Mobile Gallery (Instagram-style, for ?workId=XXX) -->
   <div id="ar-viewer-ui">
-    <div class="ig-header">
-      <span class="ig-header-title">SOTUTEN GALLERY</span>
-    </div>
-    <div class="ig-profile">
-      <div class="ig-avatar">
-        <img src="/VASE/vae01.png" alt="avatar" id="ig-avatar-img">
+    <div class="share-page">
+      <div class="share-header">EMOTION PAINT</div>
+      <div class="share-preview" id="share-preview"></div>
+      <div class="share-emotion" id="share-emotion">
+        <div class="emotion-bar" id="share-emotion-bar"></div>
+        <div class="emotion-label-row" id="share-emotion-labels"></div>
       </div>
-      <div class="ig-stats">
-        <div class="ig-stat">
-          <span class="ig-stat-num" id="ig-works-count">0</span>
-          <span class="ig-stat-label">作品</span>
-        </div>
-        <div class="ig-stat">
-          <span class="ig-stat-num" id="ig-artists-count">0</span>
-          <span class="ig-stat-label">参加者</span>
-        </div>
+      <div class="share-actions">
+        <button class="share-btn instagram" id="share-instagram-btn">
+          Instagramでシェア
+        </button>
+        <button class="share-btn download" id="share-download-btn">
+          画像を保存
+        </button>
       </div>
-    </div>
-    <!-- All works emotion summary -->
-    <div class="ig-emotion-summary" id="ig-emotion-summary">
-      <div class="qr-emotion-title">みんなの感情</div>
-      <div class="emotion-bar" id="ig-all-emotion-bar"></div>
-      <div class="emotion-label-row" id="ig-all-emotion-labels"></div>
-    </div>
-    <!-- Featured work (3D viewer) -->
-    <div class="ig-featured" id="ig-featured" style="display:none;">
-      <div class="ig-featured-wrap" id="ig-featured-wrap"></div>
-      <div class="ig-featured-info">
-        <span class="ig-featured-author" id="ig-featured-author"></span>
-        <div class="ig-featured-actions">
-          <button class="ig-action-btn primary" id="ig-download-btn">保存</button>
-        </div>
-      </div>
-      <!-- Featured work emotion breakdown -->
-      <div class="ig-featured-emotion" id="ig-featured-emotion">
-        <div class="emotion-bar" id="ig-featured-emotion-bar"></div>
-        <div class="emotion-label-row" id="ig-featured-emotion-labels"></div>
-      </div>
-    </div>
-    <!-- Grid tabs -->
-    <div class="ig-grid-header">
-      <span class="ig-grid-tab">すべての作品</span>
-    </div>
-    <!-- Grid of all works -->
-    <div class="ig-grid" id="ig-grid"></div>
-    <!-- Detail modal -->
-    <div id="ig-detail-modal">
-      <button class="ig-detail-close" id="ig-detail-close">&times;</button>
-      <div class="ig-detail-box">
-        <div class="ig-detail-video" id="ig-detail-video"></div>
-        <div class="ig-detail-info">
-          <div class="ig-detail-author" id="ig-detail-author"></div>
-          <div class="ig-detail-emotion" id="ig-detail-emotion">
-            <div class="emotion-bar" id="ig-detail-emotion-bar"></div>
-            <div class="emotion-label-row" id="ig-detail-emotion-labels"></div>
-          </div>
-          <div class="ig-detail-actions">
-            <button class="ig-action-btn primary" id="ig-detail-download">保存する</button>
-          </div>
-        </div>
-      </div>
+      <div class="share-message" id="share-message"></div>
     </div>
   </div>
 
@@ -2607,7 +2339,62 @@
         // Inner bottom center (close the bottom from inside)
         profile.push(new THREE.Vector2(0, innerPts[0].y));
 
-        return new THREE.LatheGeometry(profile, LATHE_SEGMENTS);
+        const geom = new THREE.LatheGeometry(profile, LATHE_SEGMENTS);
+
+        // ── Improved UV mapping: proper cylindrical mapping for both vases ──
+        const outerWallStart = 1; // index after bottom center
+        const outerWallEnd = outerWallStart + outerPts.length - 1;
+        const profileLen = profile.length;
+        const minY = outerPts[0].y;
+        const maxY = outerPts[outerPts.length - 1].y;
+        const yRange = maxY - minY;
+
+        const uv = geom.attributes.uv;
+        const pos = geom.attributes.position;
+
+        // Calculate cumulative arc length for better V mapping
+        const arcLengths = [0];
+        for (let i = 1; i < outerPts.length; i++) {
+          const dx = outerPts[i].x - outerPts[i - 1].x;
+          const dy = outerPts[i].y - outerPts[i - 1].y;
+          arcLengths.push(arcLengths[i - 1] + Math.sqrt(dx * dx + dy * dy));
+        }
+        const totalArcLength = arcLengths[arcLengths.length - 1];
+
+        for (let seg = 0; seg <= LATHE_SEGMENTS; seg++) {
+          // U coordinate: normalized angle (0 to 1 around the circle)
+          const u = seg / LATHE_SEGMENTS;
+
+          for (let pt = 0; pt < profileLen; pt++) {
+            const idx = seg * profileLen + pt;
+
+            // Set U coordinate for all points
+            uv.setX(idx, u);
+
+            if (pt >= outerWallStart && pt <= outerWallEnd) {
+              // Outer wall: map V using arc length for uniform texture distribution
+              const outerPtIdx = pt - outerWallStart;
+              const v = arcLengths[outerPtIdx] / totalArcLength;
+              uv.setY(idx, v);
+            } else if (pt === 0) {
+              // Bottom center: V=0
+              uv.setY(idx, 0);
+            } else {
+              // Inner wall, rim, inner bottom: mirror the outer wall mapping
+              const innerIdx = profileLen - 1 - pt;
+              if (innerIdx >= outerWallStart && innerIdx <= outerWallEnd) {
+                const outerPtIdx = innerIdx - outerWallStart;
+                const v = arcLengths[outerPtIdx] / totalArcLength;
+                uv.setY(idx, v);
+              } else {
+                uv.setY(idx, pt > outerWallEnd ? 1.0 : 0.0);
+              }
+            }
+          }
+        }
+        uv.needsUpdate = true;
+
+        return geom;
       }
 
       let currentVaseShape = 'vaseA';
@@ -2688,6 +2475,161 @@
         normalScale: new THREE.Vector2(1.2, 1.2),
         side: THREE.DoubleSide
       });
+
+      // ── Vase effect uniforms (applied directly to vase material) ──
+      const vaseEffectUniforms = {
+        uTime: { value: 0 },
+        uMelt: { value: 0 }, uTiltshift: { value: 0 },
+        uBadtv: { value: 0 }, uEdge: { value: 0 },
+        uSlices: { value: 0 }, uVignette: { value: 0 },
+        uWobble: { value: 0 }, uPolar: { value: 0 },
+        uSmear: { value: 0 }, uDot: { value: 0 }
+      };
+
+      function applyVaseEffects(material) {
+        material.onBeforeCompile = (shader) => {
+          Object.entries(vaseEffectUniforms).forEach(([key, uniform]) => {
+            shader.uniforms[key] = uniform;
+          });
+
+          // ── Vertex shader: mesh deformation (wobble + melt) ──
+          shader.vertexShader = shader.vertexShader.replace(
+            '#include <common>',
+            `#include <common>
+            uniform float uTime;
+            uniform float uWobble;
+            uniform float uMelt;
+            `
+          );
+          shader.vertexShader = shader.vertexShader.replace(
+            '#include <begin_vertex>',
+            `#include <begin_vertex>
+            if (uWobble > 0.01) {
+              float wAmt = uWobble * 0.15;
+              transformed.x += wAmt * sin(transformed.y * 8.0 + uTime * 2.5);
+              transformed.z += wAmt * cos(transformed.y * 6.0 + uTime * 1.8);
+            }
+            if (uMelt > 0.01) {
+              float mAmt = uMelt * 0.1;
+              float meltFactor = smoothstep(0.0, 3.5, transformed.y);
+              transformed.x *= 1.0 + mAmt * meltFactor * sin(uTime * 1.2 + transformed.y * 3.0);
+              transformed.z *= 1.0 + mAmt * meltFactor * cos(uTime * 0.8 + transformed.y * 2.0);
+              transformed.y -= mAmt * meltFactor * meltFactor * 0.5;
+            }
+            `
+          );
+
+          // ── Fragment shader: texture effects on vase surface ──
+          shader.fragmentShader = shader.fragmentShader.replace(
+            '#include <common>',
+            `#include <common>
+            uniform float uTime;
+            uniform float uMelt, uTiltshift, uBadtv, uEdge;
+            uniform float uSlices, uVignette, uWobble, uPolar, uSmear, uDot;
+            float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+            `
+          );
+
+          shader.fragmentShader = shader.fragmentShader.replace(
+            '#include <map_fragment>',
+            `
+            #ifdef USE_MAP
+            vec2 mapUv = vMapUv;
+
+            if (uWobble > 0.01) {
+              float w = uWobble * 0.04;
+              mapUv.x += w * sin(mapUv.y * 18.0 + uTime * 2.5);
+              mapUv.y += w * cos(mapUv.x * 18.0 + uTime * 1.8);
+            }
+            if (uMelt > 0.01) {
+              float m = uMelt * 0.05;
+              mapUv.y += m * sin(mapUv.x * 12.0 + uTime * 1.2) * sin(mapUv.y * 6.0 + uTime * 0.8);
+              mapUv.x += m * 0.5 * cos(mapUv.y * 10.0 + uTime * 2.0);
+            }
+            if (uBadtv > 0.01) {
+              float n = vaseHash(vec2(floor(mapUv.y * 80.0), floor(uTime * 15.0)));
+              float jitter = (n - 0.5) * uBadtv * 0.08;
+              float band = step(0.97 - uBadtv * 0.05, vaseHash(vec2(floor(mapUv.y * 30.0), floor(uTime * 8.0))));
+              mapUv.x += jitter + band * (n - 0.5) * uBadtv * 0.15;
+            }
+            if (uSlices > 0.01) {
+              float si = floor(mapUv.y * 25.0);
+              float off = sin(si * 4.3 + uTime * 0.8) * uSlices * 0.06;
+              mapUv.x += off * step(0.4, vaseHash(vec2(si, 1.0)));
+            }
+
+            vec4 sampledDiffuseColor;
+            if (uSmear > 0.01) {
+              vec4 smearSum = vec4(0.0);
+              float sd = uSmear * 0.025;
+              for (float i = 0.0; i < 10.0; i++) {
+                smearSum += texture2D(map, mapUv - vec2(sd * i / 10.0, sd * i / 10.0 * 0.3));
+              }
+              sampledDiffuseColor = smearSum / 10.0;
+            } else {
+              sampledDiffuseColor = texture2D(map, mapUv);
+            }
+
+            if (uBadtv > 0.01) {
+              float sp = uBadtv * 0.012;
+              sampledDiffuseColor.r = texture2D(map, mapUv + vec2(sp, 0.0)).r;
+              sampledDiffuseColor.b = texture2D(map, mapUv - vec2(sp, 0.0)).b;
+            }
+            if (uTiltshift > 0.01) {
+              float bz = smoothstep(0.15, 0.9, abs(mapUv.y - 0.5) * 2.0) * uTiltshift;
+              if (bz > 0.01) {
+                vec4 bl = vec4(0.0);
+                for (float i = -4.0; i <= 4.0; i++) bl += texture2D(map, mapUv + vec2(0.0, i * 0.005 * bz));
+                sampledDiffuseColor = mix(sampledDiffuseColor, bl / 9.0, bz * 0.8);
+              }
+            }
+            if (uEdge > 0.01) {
+              float e = 1.0 / 480.0;
+              vec3 etl = texture2D(map, mapUv + vec2(-e, -e)).rgb;
+              vec3 etr = texture2D(map, mapUv + vec2(e, -e)).rgb;
+              vec3 ebl = texture2D(map, mapUv + vec2(-e, e)).rgb;
+              vec3 ebr = texture2D(map, mapUv + vec2(e, e)).rgb;
+              vec3 gx = -etl + etr - ebl + ebr;
+              vec3 gy = -etl - etr + ebl + ebr;
+              sampledDiffuseColor.rgb += sqrt(gx * gx + gy * gy) * uEdge * 2.0;
+            }
+            if (uBadtv > 0.01) {
+              float sc = sin(mapUv.y * 480.0 * 3.14159) * 0.5 + 0.5;
+              sampledDiffuseColor.rgb *= 1.0 - uBadtv * 0.25 * (1.0 - sc);
+            }
+            if (uVignette > 0.01) {
+              float d = length(mapUv - 0.5) * 1.6;
+              sampledDiffuseColor.rgb *= 1.0 - smoothstep(0.2, 1.3, d) * uVignette * 0.85;
+            }
+            if (uPolar > 0.01) {
+              vec2 c = mapUv - 0.5;
+              float ang = atan(c.y, c.x), rad = length(c);
+              float ps = uPolar * 0.12 + 0.005;
+              vec2 pu = vec2(cos(floor(ang / ps) * ps), sin(floor(ang / ps) * ps)) * floor(rad / ps) * ps + 0.5;
+              sampledDiffuseColor = mix(sampledDiffuseColor, texture2D(map, pu), uPolar * 0.65);
+            }
+            if (uDot > 0.01) {
+              float ds = mix(3.0, 14.0, uDot);
+              vec2 cc = (floor(mapUv * 480.0 / ds) + 0.5) * ds / 480.0;
+              vec4 dc = texture2D(map, cc);
+              float lm = dot(dc.rgb, vec3(0.299, 0.587, 0.114));
+              float dd = length(fract(mapUv * 480.0 / ds) - 0.5);
+              float dm = 1.0 - smoothstep(lm * 0.45, lm * 0.45 + 0.05, dd);
+              sampledDiffuseColor = mix(sampledDiffuseColor, vec4(dc.rgb * dm, 1.0), uDot * 0.55);
+            }
+
+            diffuseColor *= sampledDiffuseColor;
+            #endif
+            `
+          );
+        };
+        material.customProgramCacheKey = () => 'vaseEffects_' + material.uuid;
+        material.needsUpdate = true;
+      }
+
+      applyVaseEffects(matDisplacement);
+      applyVaseEffects(matParallax);
+      applyVaseEffects(matBump);
 
       let currentMode = 'bump'; // Default to Bump/Normal
       let vase = new THREE.Mesh(geometry, matBump);
@@ -2856,141 +2798,6 @@
         // Activity tracking (for future use if needed)
       }
 
-      // ══════════════════════════════════════
-      //  Post-processing
-      // ══════════════════════════════════════
-      const renderTarget = new THREE.WebGLRenderTarget(viewW * renderer.getPixelRatio(), viewH * renderer.getPixelRatio());
-      const postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-      const postScene = new THREE.Scene();
-
-      const effectUniforms = {
-        tScene: { value: renderTarget.texture },
-        time: { value: 0 },
-        resolution: { value: new THREE.Vector2(viewW, viewH) },
-        uMelt: { value: 0 }, uTiltshift: { value: 0 },
-        uBadtv: { value: 0 }, uEdge: { value: 0 },
-        uSlices: { value: 0 }, uVignette: { value: 0 },
-        uWobble: { value: 0 }, uPolar: { value: 0 },
-        uSmear: { value: 0 }, uDot: { value: 0 }
-      };
-
-      const postMaterial = new THREE.ShaderMaterial({
-        uniforms: effectUniforms,
-        vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-        fragmentShader: `
-      precision highp float;
-      uniform sampler2D tScene;
-      uniform float time;
-      uniform vec2 resolution;
-      uniform float uMelt, uTiltshift, uBadtv, uEdge, uSlices, uVignette, uWobble, uPolar, uSmear, uDot;
-      varying vec2 vUv;
-
-      float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
-
-      void main() {
-        vec2 uv = vUv;
-
-        if (uWobble > 0.01) {
-          float w = uWobble * 0.04;
-          uv.x += w * sin(uv.y * 18.0 + time * 2.5);
-          uv.y += w * cos(uv.x * 18.0 + time * 1.8);
-        }
-
-        if (uMelt > 0.01) {
-          float m = uMelt * 0.05;
-          uv.y += m * sin(uv.x * 12.0 + time * 1.2) * sin(uv.y * 6.0 + time * 0.8);
-          uv.x += m * 0.5 * cos(uv.y * 10.0 + time * 2.0);
-        }
-
-        if (uBadtv > 0.01) {
-          float n = hash(vec2(floor(uv.y * 80.0), floor(time * 15.0)));
-          float jitter = (n - 0.5) * uBadtv * 0.08;
-          float band = step(0.97 - uBadtv * 0.05, hash(vec2(floor(uv.y * 30.0), floor(time * 8.0))));
-          uv.x += jitter + band * (n - 0.5) * uBadtv * 0.15;
-        }
-
-        if (uSlices > 0.01) {
-          float si = floor(uv.y * 25.0);
-          float off = sin(si * 4.3 + time * 0.8) * uSlices * 0.06;
-          uv.x += off * step(0.4, hash(vec2(si, 1.0)));
-        }
-
-        vec4 color;
-        if (uSmear > 0.01) {
-          vec4 sum = vec4(0.0);
-          float sd = uSmear * 0.025;
-          for (float i = 0.0; i < 10.0; i++) {
-            sum += texture2D(tScene, uv - vec2(sd * i / 10.0, sd * i / 10.0 * 0.3));
-          }
-          color = sum / 10.0;
-        } else {
-          color = texture2D(tScene, uv);
-        }
-
-        if (uBadtv > 0.01) {
-          float sp = uBadtv * 0.012;
-          color.r = texture2D(tScene, uv + vec2(sp, 0.0)).r;
-          color.b = texture2D(tScene, uv - vec2(sp, 0.0)).b;
-        }
-
-        if (uTiltshift > 0.01) {
-          float bz = smoothstep(0.15, 0.9, abs(vUv.y - 0.5) * 2.0) * uTiltshift;
-          if (bz > 0.01) {
-            vec4 bl = vec4(0.0);
-            for (float i = -4.0; i <= 4.0; i++) bl += texture2D(tScene, uv + vec2(0.0, i * 0.005 * bz));
-            color = mix(color, bl / 9.0, bz * 0.8);
-          }
-        }
-
-        if (uEdge > 0.01) {
-          float e = 1.0 / resolution.x;
-          vec3 tl = texture2D(tScene, uv + vec2(-e, -e)).rgb;
-          vec3 tr = texture2D(tScene, uv + vec2(e, -e)).rgb;
-          vec3 bl = texture2D(tScene, uv + vec2(-e, e)).rgb;
-          vec3 br = texture2D(tScene, uv + vec2(e, e)).rgb;
-          vec3 gx = -tl + tr - bl + br;
-          vec3 gy = -tl - tr + bl + br;
-          color.rgb += sqrt(gx * gx + gy * gy) * uEdge * 2.0;
-        }
-
-        if (uBadtv > 0.01) {
-          float sc = sin(vUv.y * resolution.y * 3.14159) * 0.5 + 0.5;
-          color.rgb *= 1.0 - uBadtv * 0.25 * (1.0 - sc);
-        }
-
-        if (uVignette > 0.01) {
-          float d = length(vUv - 0.5) * 1.6;
-          color.rgb *= 1.0 - smoothstep(0.2, 1.3, d) * uVignette * 0.85;
-        }
-
-        if (uPolar > 0.01) {
-          vec2 c = vUv - 0.5;
-          float ang = atan(c.y, c.x), rad = length(c);
-          float ps = uPolar * 0.12 + 0.005;
-          vec2 pu = vec2(cos(floor(ang / ps) * ps), sin(floor(ang / ps) * ps)) * floor(rad / ps) * ps + 0.5;
-          color = mix(color, texture2D(tScene, pu), uPolar * 0.65);
-        }
-
-        if (uDot > 0.01) {
-          float ds = mix(3.0, 14.0, uDot);
-          vec2 cc = (floor(vUv * resolution / ds) + 0.5) * ds / resolution;
-          vec4 dc = texture2D(tScene, cc);
-          float lm = dot(dc.rgb, vec3(0.299, 0.587, 0.114));
-          float dd = length(fract(vUv * resolution / ds) - 0.5);
-          float dm = 1.0 - smoothstep(lm * 0.45, lm * 0.45 + 0.05, dd);
-          color = mix(color, vec4(dc.rgb * dm, 1.0), uDot * 0.55);
-        }
-
-        gl_FragColor = color;
-      }
-    `
-      });
-
-      const postQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMaterial);
-      postScene.add(postQuad);
-
-      let effectsActive = false;
-
       socket.on('draw', (data) => {
         onActivity();
         const dataURL = typeof data === 'string' ? data : data.dataURL;
@@ -3017,16 +2824,16 @@
 
       socket.on('emotion', (data) => {
         onActivity();
-        effectUniforms.uMelt.value = data.melt || 0;
-        effectUniforms.uTiltshift.value = data.tiltshift || 0;
-        effectUniforms.uBadtv.value = data.badtv || 0;
-        effectUniforms.uEdge.value = data.edge || 0;
-        effectUniforms.uSlices.value = data.slices || 0;
-        effectUniforms.uVignette.value = data.vignette || 0;
-        effectUniforms.uWobble.value = data.wobble || 0;
-        effectUniforms.uPolar.value = data.polar || 0;
-        effectUniforms.uSmear.value = data.smear || 0;
-        effectUniforms.uDot.value = data.dot || 0;
+        vaseEffectUniforms.uMelt.value = data.melt || 0;
+        vaseEffectUniforms.uTiltshift.value = data.tiltshift || 0;
+        vaseEffectUniforms.uBadtv.value = data.badtv || 0;
+        vaseEffectUniforms.uEdge.value = data.edge || 0;
+        vaseEffectUniforms.uSlices.value = data.slices || 0;
+        vaseEffectUniforms.uVignette.value = data.vignette || 0;
+        vaseEffectUniforms.uWobble.value = data.wobble || 0;
+        vaseEffectUniforms.uPolar.value = data.polar || 0;
+        vaseEffectUniforms.uSmear.value = data.smear || 0;
+        vaseEffectUniforms.uDot.value = data.dot || 0;
 
         // Find dominant emotion
         const emotionSums = {
@@ -3046,15 +2853,12 @@
         emotionIntensity = Math.min(maxVal, 1);
         targetColor = EMOTION_COLORS[dominantEmotion];
         particleSpeed = 0.5 + emotionIntensity * 2;
-
-        const sum = Object.values(data).reduce((a, b) => a + b, 0);
-        effectsActive = sum > 0.001;
       });
 
       function animate() {
         requestAnimationFrame(animate);
         const time = performance.now() * 0.001;
-        effectUniforms.time.value = time;
+        vaseEffectUniforms.uTime.value = time;
 
         // Vase rotation
         vase.rotation.y += 0.004;
@@ -3120,15 +2924,7 @@
         if (bottomDiscTexture) bottomDiscTexture.needsUpdate = true;
 
         // Render
-        if (effectsActive) {
-          renderer.setRenderTarget(renderTarget);
-          renderer.render(scene, camera);
-          renderer.setRenderTarget(null);
-          renderer.render(postScene, postCamera);
-        } else {
-          renderer.setRenderTarget(null);
-          renderer.render(scene, camera);
-        }
+        renderer.render(scene, camera);
       }
       animate();
 
@@ -3137,8 +2933,6 @@
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
         renderer.setSize(w, h);
-        renderTarget.setSize(w * renderer.getPixelRatio(), h * renderer.getPixelRatio());
-        effectUniforms.resolution.value.set(w, h);
       });
 
       // ══════════════════════════════════════
@@ -3428,19 +3222,16 @@
         // Restore effects
         if (work.effectValues) {
           const data = work.effectValues;
-          effectUniforms.uMelt.value = data.melt || 0;
-          effectUniforms.uTiltshift.value = data.tiltshift || 0;
-          effectUniforms.uBadtv.value = data.badtv || 0;
-          effectUniforms.uEdge.value = data.edge || 0;
-          effectUniforms.uSlices.value = data.slices || 0;
-          effectUniforms.uVignette.value = data.vignette || 0;
-          effectUniforms.uWobble.value = data.wobble || 0;
-          effectUniforms.uPolar.value = data.polar || 0;
-          effectUniforms.uSmear.value = data.smear || 0;
-          effectUniforms.uDot.value = data.dot || 0;
-
-          const sum = Object.values(data).reduce((a, b) => a + b, 0);
-          effectsActive = sum > 0.001;
+          vaseEffectUniforms.uMelt.value = data.melt || 0;
+          vaseEffectUniforms.uTiltshift.value = data.tiltshift || 0;
+          vaseEffectUniforms.uBadtv.value = data.badtv || 0;
+          vaseEffectUniforms.uEdge.value = data.edge || 0;
+          vaseEffectUniforms.uSlices.value = data.slices || 0;
+          vaseEffectUniforms.uVignette.value = data.vignette || 0;
+          vaseEffectUniforms.uWobble.value = data.wobble || 0;
+          vaseEffectUniforms.uPolar.value = data.polar || 0;
+          vaseEffectUniforms.uSmear.value = data.smear || 0;
+          vaseEffectUniforms.uDot.value = data.dot || 0;
         }
       }
 
@@ -3517,328 +3308,79 @@
     // ══════════════════════════════════════════════════════════════
     if (role === 'arViewer') {
       document.getElementById('ar-viewer-ui').style.display = 'flex';
-      // bodyのoverflow:hiddenを解除してスクロール可能にする
       document.body.style.overflow = 'auto';
       document.body.style.height = 'auto';
 
-      // ── Instagram-style Gallery: Load ALL works ──
-      const igGrid = document.getElementById('ig-grid');
-      const igFeatured = document.getElementById('ig-featured');
-      const igFeaturedWrap = document.getElementById('ig-featured-wrap');
-      const igDetailModal = document.getElementById('ig-detail-modal');
-      const igDetailVideo = document.getElementById('ig-detail-video');
-      let allWorks = [];
-      let featuredRenderer = null, featuredScene = null, featuredCamera = null;
-      let featuredVase = null, featuredAnimId = null;
-      let detailRenderer = null, detailScene = null, detailCamera = null;
-      let detailVase = null, detailAnimId = null;
-
-      const WALL_THICKNESS = 0.12;
-      const LATHE_SEGMENTS = 64;
-      const SPLINE_SAMPLES = 40;
-
-      function createVaseGeometry(shapeData) {
-        const maxH = shapeData[shapeData.length - 1].h;
-        const scale = 3.5 / maxH;
-        const outerControlPts = shapeData.map(p => new THREE.Vector2(p.r * scale, p.h * scale));
-        const outerSpline = new THREE.SplineCurve(outerControlPts);
-        const outerPts = outerSpline.getPoints(SPLINE_SAMPLES);
-        const innerPts = outerPts.map(p => new THREE.Vector2(Math.max(0.01, p.x - WALL_THICKNESS), p.y));
-        const profile = [];
-        profile.push(new THREE.Vector2(0, outerPts[0].y));
-        outerPts.forEach(p => profile.push(p.clone()));
-        profile.push(outerPts[outerPts.length - 1].clone());
-        profile.push(innerPts[innerPts.length - 1].clone());
-        for (let i = innerPts.length - 1; i >= 0; i--) profile.push(innerPts[i].clone());
-        profile.push(new THREE.Vector2(0, innerPts[0].y));
-        return new THREE.LatheGeometry(profile, LATHE_SEGMENTS);
-      }
-
-      function createMiniScene(container, work) {
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x1a1a1a);
-
-        const w = container.clientWidth || 300;
-        const h = container.clientHeight || (w * 5 / 4);
-        const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
-        camera.position.set(0, 2.5, 6);
-        camera.lookAt(0, 1.5, 0);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.setSize(w, h);
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.2;
-        container.innerHTML = '';
-        container.appendChild(renderer.domElement);
-
-        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(4, 6, 4);
-        scene.add(dirLight);
-
-        const texCanvas = document.createElement('canvas');
-        texCanvas.width = TEX_W; texCanvas.height = TEX_H;
-        const texCtx = texCanvas.getContext('2d');
-        texCtx.fillStyle = '#fff';
-        texCtx.fillRect(0, 0, TEX_W, TEX_H);
-        const canvasTexture = new THREE.CanvasTexture(texCanvas);
-        canvasTexture.colorSpace = THREE.SRGBColorSpace;
-
-        const material = new THREE.MeshStandardMaterial({
-          color: 0xffffff, roughness: 0.35, metalness: 0.08,
-          map: canvasTexture, side: THREE.DoubleSide
-        });
-
-        const shape = potteryShapes[work.vaseShape || 'vaseA'];
-        const geom = createVaseGeometry(shape);
-        const vase = new THREE.Mesh(geom, material);
-        scene.add(vase);
-
-        if (work.displacementData) {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.onload = () => {
-            texCtx.drawImage(img, 0, 0, TEX_W, TEX_H);
-            canvasTexture.needsUpdate = true;
-          };
-          img.src = work.displacementData;
-        }
-
-        return { scene, camera, renderer, vase };
-      }
-
-      // Load all works from server API + Firestore
-      async function loadAllWorks() {
-        let works = [];
-
+      // 作品データを取得
+      async function loadWork() {
+        let work = null;
         try {
-          const res = await fetch('/api/works');
-          if (res.ok) {
-            const serverWorks = await res.json();
-            works = serverWorks.map(w => ({ ...w, source: 'server' }));
-          }
-        } catch (e) {
-          console.warn('Server API load failed:', e);
-        }
-
-        if (db) {
+          const res = await fetch('/api/works/' + workId);
+          if (res.ok) work = await res.json();
+        } catch(e) { console.warn('Server API load failed:', e); }
+        if (!work && db && firebaseReady) {
           try {
-            if (!firebaseReady) {
-              await new Promise(resolve => {
-                const check = setInterval(() => {
-                  if (firebaseReady) { clearInterval(check); resolve(); }
-                }, 200);
-                setTimeout(() => { clearInterval(check); resolve(); }, 5000);
-              });
-            }
-            if (firebaseReady) {
-              const snapshot = await db.collection(GALLERY_PATH)
-                .orderBy('timestamp', 'desc').limit(50).get();
-              snapshot.docs.forEach(doc => {
-                const data = doc.data();
-                if (!works.find(w => w.id === doc.id)) {
-                  works.push({ id: doc.id, ...data, source: 'firestore' });
-                }
-              });
-            }
-          } catch (e) {
-            console.warn('Firestore gallery load failed:', e);
-          }
+            const doc = await db.collection(GALLERY_PATH).doc(workId).get();
+            if (doc.exists) work = { id: doc.id, ...doc.data() };
+          } catch(e) { console.warn('Firestore load failed:', e); }
         }
-
-        return works;
+        return work;
       }
 
-      // Show featured work in 3D
-      function showFeatured(work) {
-        if (featuredAnimId) cancelAnimationFrame(featuredAnimId);
-        igFeatured.style.display = 'block';
+      // シェアページ初期化
+      async function initSharePage() {
+        const msgEl = document.getElementById('share-message');
+        msgEl.textContent = '読み込み中...';
 
-        const result = createMiniScene(igFeaturedWrap, work);
-        featuredRenderer = result.renderer;
-        featuredScene = result.scene;
-        featuredCamera = result.camera;
-        featuredVase = result.vase;
-
-        // Display: signature image or emotion label (NOT work ID)
-        const authorEl = document.getElementById('ig-featured-author');
-        const dominant = getDominantEmotion(work.effectValues);
-        const meta = EMOTION_META[dominant];
-        authorEl.textContent = `${meta.icon} ${meta.label}な作品`;
-        authorEl.style.color = meta.hex;
-
-        // Render emotion bar for featured work
-        renderEmotionBar(
-          document.getElementById('ig-featured-emotion-bar'),
-          document.getElementById('ig-featured-emotion-labels'),
-          calcEmotionFromEffects(work.effectValues)
-        );
-
-        let angle = 0;
-        function animate() {
-          featuredAnimId = requestAnimationFrame(animate);
-          featuredVase.rotation.y += 0.005;
-          angle += 0.003;
-          featuredCamera.position.x = Math.sin(angle) * 6;
-          featuredCamera.position.z = Math.cos(angle) * 6;
-          featuredCamera.lookAt(0, 1.5, 0);
-          featuredRenderer.render(featuredScene, featuredCamera);
-        }
-        animate();
-      }
-
-      // Show detail modal with 3D
-      function showDetail(work) {
-        if (detailAnimId) cancelAnimationFrame(detailAnimId);
-        igDetailModal.classList.add('active');
-
-        const result = createMiniScene(igDetailVideo, work);
-        detailRenderer = result.renderer;
-        detailScene = result.scene;
-        detailCamera = result.camera;
-        detailVase = result.vase;
-
-        const detailDominant = getDominantEmotion(work.effectValues);
-        const detailMeta = EMOTION_META[detailDominant];
-        const detailAuthorEl = document.getElementById('ig-detail-author');
-        detailAuthorEl.textContent = `${detailMeta.icon} ${detailMeta.label}な作品`;
-        detailAuthorEl.style.color = detailMeta.hex;
-
-        // Render emotion bar for detail modal
-        renderEmotionBar(
-          document.getElementById('ig-detail-emotion-bar'),
-          document.getElementById('ig-detail-emotion-labels'),
-          calcEmotionFromEffects(work.effectValues)
-        );
-
-        let angle = 0;
-        function animate() {
-          detailAnimId = requestAnimationFrame(animate);
-          detailVase.rotation.y += 0.008;
-          angle += 0.004;
-          detailCamera.position.x = Math.sin(angle) * 6;
-          detailCamera.position.z = Math.cos(angle) * 6;
-          detailCamera.lookAt(0, 1.5, 0);
-          detailRenderer.render(detailScene, detailCamera);
-        }
-        animate();
-      }
-
-      // Close detail modal
-      document.getElementById('ig-detail-close').addEventListener('click', () => {
-        igDetailModal.classList.remove('active');
-        if (detailAnimId) cancelAnimationFrame(detailAnimId);
-        igDetailVideo.innerHTML = '';
-      });
-
-      // Download from detail
-      document.getElementById('ig-detail-download').addEventListener('click', () => {
-        if (!detailRenderer) return;
-        detailRenderer.render(detailScene, detailCamera);
-        const link = document.createElement('a');
-        link.download = 'pottery_work.png';
-        link.href = detailRenderer.domElement.toDataURL('image/png');
-        link.click();
-      });
-
-      // Download from featured
-      document.getElementById('ig-download-btn').addEventListener('click', () => {
-        if (!featuredRenderer) return;
-        featuredRenderer.render(featuredScene, featuredCamera);
-        const link = document.createElement('a');
-        link.download = 'pottery_featured.png';
-        link.href = featuredRenderer.domElement.toDataURL('image/png');
-        link.click();
-      });
-
-      // Render grid
-      function renderGrid(works) {
-        igGrid.innerHTML = '';
-        if (works.length === 0) {
-          igGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#8e8e8e;font-size:14px;">まだ作品がありません</div>';
+        const work = await loadWork();
+        if (!work) {
+          msgEl.textContent = '作品が見つかりませんでした';
           return;
         }
+        msgEl.textContent = '';
 
-        works.forEach((work, idx) => {
-          const item = document.createElement('div');
-          item.className = 'ig-grid-item';
+        // サムネイル表示
+        const previewEl = document.getElementById('share-preview');
+        if (work.thumbnailUrl || work.displacementData) {
+          const img = document.createElement('img');
+          img.src = work.thumbnailUrl || work.displacementData;
+          img.style.maxWidth = '100%';
+          img.style.borderRadius = '12px';
+          previewEl.appendChild(img);
+        }
 
-          // Add emotion color border
-          if (work.effectValues) {
-            const dominant = getDominantEmotion(work.effectValues);
-            item.classList.add('has-emotion');
-            item.style.setProperty('--emotion-color', EMOTION_META[dominant].hex);
-          }
+        // 感情バー
+        if (work.effectValues) {
+          renderEmotionBar(
+            document.getElementById('share-emotion-bar'),
+            document.getElementById('share-emotion-labels'),
+            calcEmotionFromEffects(work.effectValues)
+          );
+        }
 
-          if (work.thumbnailUrl) {
-            const img = document.createElement('img');
-            img.src = work.thumbnailUrl;
-            img.alt = '作品';
-            img.loading = 'lazy';
-            item.appendChild(img);
-          } else {
-            item.style.background = '#ddd';
-          }
+        // Instagram共有ボタン
+        document.getElementById('share-instagram-btn').addEventListener('click', () => {
+          const imgUrl = work.thumbnailUrl || work.displacementData;
+          // Instagram Stories deep link (モバイル)
+          window.location.href = 'instagram-stories://share?background_image=' + encodeURIComponent(imgUrl);
+          // フォールバック: Web Share API
+          setTimeout(() => {
+            if (navigator.share) {
+              navigator.share({ title: 'Emotion Paint', url: location.href }).catch(() => {});
+            }
+          }, 2000);
+        });
 
-          // Show dominant emotion icon instead of just signature mark
-          const emotionBadge = document.createElement('div');
-          emotionBadge.className = 'grid-sign';
-          if (work.effectValues) {
-            const dominant = getDominantEmotion(work.effectValues);
-            emotionBadge.textContent = EMOTION_META[dominant].icon;
-          }
-          item.appendChild(emotionBadge);
-
-          item.addEventListener('click', () => showDetail(work));
-          igGrid.appendChild(item);
+        // 画像保存ボタン
+        document.getElementById('share-download-btn').addEventListener('click', () => {
+          const a = document.createElement('a');
+          a.href = work.thumbnailUrl || work.displacementData;
+          a.download = 'emotion-paint-' + workId + '.png';
+          a.click();
         });
       }
 
-      // Initialize gallery
-      async function initGallery() {
-        igGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#8e8e8e;">読み込み中...</div>';
-
-        allWorks = await loadAllWorks();
-        document.getElementById('ig-works-count').textContent = allWorks.length;
-
-        const uniqueArtists = new Set(allWorks.map(w => w.id)).size;
-        document.getElementById('ig-artists-count').textContent = uniqueArtists;
-
-        // Calculate aggregate emotion for ALL works
-        const allEmotionTotals = { joy: 0, shock: 0, sad: 0, confuse: 0, fire: 0 };
-        let worksWithEffects = 0;
-        allWorks.forEach(w => {
-          if (w.effectValues) {
-            worksWithEffects++;
-            const emo = calcEmotionFromEffects(w.effectValues);
-            Object.keys(allEmotionTotals).forEach(k => allEmotionTotals[k] += emo[k]);
-          }
-        });
-        if (worksWithEffects > 0) {
-          Object.keys(allEmotionTotals).forEach(k => allEmotionTotals[k] /= worksWithEffects);
-        }
-        renderEmotionBar(
-          document.getElementById('ig-all-emotion-bar'),
-          document.getElementById('ig-all-emotion-labels'),
-          allEmotionTotals
-        );
-
-        // Show the specific workId as featured if present
-        if (workId) {
-          const myWork = allWorks.find(w => w.id === workId);
-          if (myWork) {
-            showFeatured(myWork);
-            const vaseType = myWork.vaseShape || 'vaseA';
-            const avatarImg = vaseType === 'vaseB' ? '/VASE/vase02.png' : '/VASE/vae01.png';
-            document.getElementById('ig-avatar-img').src = avatarImg;
-          }
-        }
-
-        renderGrid(allWorks);
-      }
-
-      initGallery();
+      initSharePage();
     }
   </script>
 </body>

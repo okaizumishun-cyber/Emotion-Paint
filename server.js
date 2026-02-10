@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
@@ -38,6 +39,80 @@ app.get('/api/works', (req, res) => {
   works.forEach((val, key) => list.push({ id: key, ...val }));
   list.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
   res.json(list.slice(0, 50));
+});
+
+// ══════════════════════════════════════
+//  Instagram Auto-Post API
+// ══════════════════════════════════════
+const INSTAGRAM_ACCESS_TOKEN = process.env.INSTAGRAM_ACCESS_TOKEN;
+const INSTAGRAM_ACCOUNT_ID = process.env.INSTAGRAM_ACCOUNT_ID;
+
+app.post('/api/instagram/post', async (req, res) => {
+  if (!INSTAGRAM_ACCESS_TOKEN || !INSTAGRAM_ACCOUNT_ID) {
+    return res.status(500).json({
+      error: 'Instagram API not configured. Please set INSTAGRAM_ACCESS_TOKEN and INSTAGRAM_ACCOUNT_ID in .env file'
+    });
+  }
+
+  try {
+    const { imageUrl, caption } = req.body;
+
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'imageUrl is required' });
+    }
+
+    // Step 1: Create media container
+    const containerResponse = await fetch(
+      `https://graph.facebook.com/v18.0/${INSTAGRAM_ACCOUNT_ID}/media`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_url: imageUrl,
+          caption: caption || 'Emotion Paint - 感情を描く壺 🎨',
+          access_token: INSTAGRAM_ACCESS_TOKEN
+        })
+      }
+    );
+
+    const containerData = await containerResponse.json();
+
+    if (!containerData.id) {
+      console.error('Instagram container creation failed:', containerData);
+      return res.status(500).json({ error: 'Failed to create Instagram media container', details: containerData });
+    }
+
+    // Step 2: Publish the media
+    const publishResponse = await fetch(
+      `https://graph.facebook.com/v18.0/${INSTAGRAM_ACCOUNT_ID}/media_publish`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          creation_id: containerData.id,
+          access_token: INSTAGRAM_ACCESS_TOKEN
+        })
+      }
+    );
+
+    const publishData = await publishResponse.json();
+
+    if (!publishData.id) {
+      console.error('Instagram publish failed:', publishData);
+      return res.status(500).json({ error: 'Failed to publish to Instagram', details: publishData });
+    }
+
+    console.log('Successfully posted to Instagram:', publishData.id);
+    res.json({
+      success: true,
+      instagramPostId: publishData.id,
+      message: 'Posted to Instagram successfully'
+    });
+
+  } catch (error) {
+    console.error('Instagram post error:', error);
+    res.status(500).json({ error: 'Instagram posting failed', message: error.message });
+  }
 });
 
 // Global mood state
