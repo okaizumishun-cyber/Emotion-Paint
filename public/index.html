@@ -2973,41 +2973,7 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         const capturedImages = [];
         const captureAngles = [0, Math.PI / 2, Math.PI, Math.PI * 3 / 2]; // 0°, 90°, 180°, 270°
         let currentCaptureIndex = 0;
-        let baseRotation = vase.rotation.y; // 開始時の回転角度を記録
 
-        // Start capture frames for thumbnail (legacy)
-        const capturedFrames = [];
-
-        // ── Video Recording (MediaRecorder on WebGL canvas) ──
-        let mediaRecorder = null;
-        let videoChunks = [];
-        let videoDataUrl = null;
-
-        try {
-          const canvasStream = renderer.domElement.captureStream(30); // 30fps
-          mediaRecorder = new MediaRecorder(canvasStream, {
-            mimeType: 'video/webm;codecs=vp9',
-            videoBitsPerSecond: 2500000
-          });
-          mediaRecorder.ondataavailable = (e) => {
-            if (e.data.size > 0) videoChunks.push(e.data);
-          };
-          mediaRecorder.onstop = () => {
-            const blob = new Blob(videoChunks, { type: 'video/webm' });
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              videoDataUrl = reader.result;
-              console.log('Video recording complete, size:', blob.size);
-            };
-            reader.readAsDataURL(blob);
-          };
-          mediaRecorder.start();
-          console.log('Video recording started');
-        } catch (e) {
-          console.warn('MediaRecorder not available, skipping video:', e);
-        }
-
-        // 360度回転キャプチャ用: 焼き上げ中に高速回転
         function firingTick() {
           if (!isFiring) return;
           const elapsed = performance.now() - firingStartTime;
@@ -3043,13 +3009,22 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
 
             document.getElementById('firing-text').textContent = '冷却中...';
             document.getElementById('firing-sub').textContent = '色が定着しています';
-          }
 
-          // Capture frames for thumbnail
-          if (elapsed > FIRING_HEAT_DURATION && capturedFrames.length < 36) {
-            renderer.setRenderTarget(null);
-            renderer.render(scene, camera);
-            capturedFrames.push(renderer.domElement.toDataURL('image/jpeg', 0.7));
+            // 冷却フェーズで4方向の画像をキャプチャ
+            if (currentCaptureIndex < captureAngles.length) {
+              const targetAngle = captureAngles[currentCaptureIndex];
+              const currentAngle = vase.rotation.y % (Math.PI * 2);
+
+              // 目標角度に近づいたらキャプチャ
+              if (Math.abs(currentAngle - targetAngle) < 0.1) {
+                renderer.setRenderTarget(null);
+                renderer.render(scene, camera);
+                const imageData = renderer.domElement.toDataURL('image/jpeg', 0.9);
+                capturedImages.push(imageData);
+                currentCaptureIndex++;
+                console.log(`Captured image ${currentCaptureIndex}/4 at angle ${targetAngle}`);
+              }
+            }
           }
 
           if (progress >= 1) {
@@ -3061,19 +3036,8 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
 
             overlay.classList.remove('active');
 
-            // Stop video recording
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-              mediaRecorder.stop();
-            }
-
-            const thumbnailData = capturedFrames.length > 0
-              ? capturedFrames[Math.floor(capturedFrames.length / 2)]
-              : renderer.domElement.toDataURL('image/jpeg', 0.7);
-
-            // Wait briefly for video to finalize, then save
-            setTimeout(() => {
-              saveToFirestore(saveData, thumbnailData, videoDataUrl);
-            }, 500);
+            // 4方向の画像をFirebase Storageにアップロード
+            uploadImagesToFirebaseAndPost(saveData, capturedImages);
             return;
           }
 
@@ -3083,55 +3047,67 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         requestAnimationFrame(firingTick);
       }
 
-      async function saveToFirestore(saveData, thumbnailData, videoDataUrl) {
+      // ══════════════════════════════════════
+      //  Phase 2: Firebase Storage Upload Function
+      //  4方向の画像をFirebase Storageにアップロードし、公開URLを取得
+      // ══════════════════════════════════════
+      async function uploadImagesToFirebaseAndPost(saveData, capturedImages) {
         const workId = 'work_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         const signatureData = saveData.signatureData || null;
 
-        if (db && firebaseReady) {
-          try {
-            let thumbnailUrl = thumbnailData;
-            if (storage) {
-              try {
-                const thumbRef = storage.ref(`${GALLERY_PATH}/${workId}/thumbnail.jpg`);
-                await thumbRef.putString(thumbnailData, 'data_url');
-                thumbnailUrl = await thumbRef.getDownloadURL();
-              } catch (e) {
-                console.warn('Storage upload failed, using base64:', e);
-              }
-
-              // Upload video to Storage if available
-              if (videoDataUrl && storage) {
-                try {
-                  const videoRef = storage.ref(`${GALLERY_PATH}/${workId}/video.webm`);
-                  await videoRef.putString(videoDataUrl, 'data_url');
-                  const videoUrl = await videoRef.getDownloadURL();
-                  console.log('Video uploaded to Storage:', videoUrl);
-                } catch (e) {
-                  console.warn('Video upload failed:', e);
-                }
-              }
-            }
-
-            await db.collection(GALLERY_PATH).doc(workId).set({
-              displacementData: saveData.displacementData,
-              effectValues: saveData.effectValues,
-              vaseShape: saveData.vaseShape,
-              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-              thumbnailUrl: thumbnailUrl,
-              mode: saveData.mode,
-              signatureData: signatureData
-            });
-
-            console.log('Saved to Firestore:', workId);
-            updateGlobalMood();
-          } catch (e) {
-            console.error('Firestore save error:', e);
-          }
-        } else {
-          console.warn('Firebase not configured, using server API only');
+        if (!storage || !firebaseReady) {
+          console.warn('Firebase Storage not available, using fallback');
+          // Fallback to single image
+          await saveToServerAPI(workId, saveData, capturedImages[0], null, signatureData);
+          socket.emit('saveComplete', { workId, thumbnailUrl: capturedImages[0] });
+          return;
         }
 
-        // Always save to server API
+        try {
+          console.log('Uploading 4 images to Firebase Storage...');
+
+          // 各画像を並列アップロード
+          const uploadPromises = capturedImages.map(async (imageData, index) => {
+            const storageRef = storage.ref(`${GALLERY_PATH}/${workId}/view_${index}.jpg`);
+            await storageRef.putString(imageData, 'data_url');
+            const downloadUrl = await storageRef.getDownloadURL();
+            console.log(`Image ${index + 1}/4 uploaded:`, downloadUrl);
+            return downloadUrl;
+          });
+
+          const imageUrls = await Promise.all(uploadPromises);
+          console.log('All images uploaded successfully:', imageUrls);
+
+          // Firestoreに保存（4方向の画像URLを含む）
+          await db.collection(GALLERY_PATH).doc(workId).set({
+            displacementData: saveData.displacementData,
+            effectValues: saveData.effectValues,
+            vaseShape: saveData.vaseShape,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            thumbnailUrl: imageUrls[0], // 最初の画像をサムネイルとして使用
+            imageUrls: imageUrls, // 4方向の画像URL配列
+            mode: saveData.mode,
+            signatureData: signatureData
+          });
+
+          console.log('Saved to Firestore:', workId);
+          updateGlobalMood();
+
+          // サーバーAPIにも保存（Instagram投稿用）
+          await saveToServerAPI(workId, saveData, imageUrls[0], imageUrls, signatureData);
+
+          socket.emit('saveComplete', { workId, thumbnailUrl: imageUrls[0] });
+
+        } catch (error) {
+          console.error('Firebase upload error:', error);
+          // Fallback to single image
+          await saveToServerAPI(workId, saveData, capturedImages[0], null, signatureData);
+          socket.emit('saveComplete', { workId, thumbnailUrl: capturedImages[0] });
+        }
+      }
+
+      // Helper function to save to server API
+      async function saveToServerAPI(workId, saveData, thumbnailUrl, imageUrls, signatureData) {
         try {
           await fetch('/api/works/' + workId, {
             method: 'POST',
@@ -3141,7 +3117,8 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
               effectValues: saveData.effectValues,
               vaseShape: saveData.vaseShape,
               mode: saveData.mode,
-              thumbnailUrl: thumbnailData,
+              thumbnailUrl: thumbnailUrl,
+              imageUrls: imageUrls, // 4方向の画像URL（nullの場合は単一画像）
               signatureData: signatureData
             })
           });
@@ -3149,8 +3126,6 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         } catch (e) {
           console.error('Server API save error:', e);
         }
-
-        socket.emit('saveComplete', { workId, thumbnailUrl: thumbnailData });
       }
 
       // Listen for save event from controller
