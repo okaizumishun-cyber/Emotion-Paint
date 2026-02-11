@@ -3078,9 +3078,15 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
           const imageUrls = await Promise.all(uploadPromises);
           console.log('All images uploaded successfully:', imageUrls);
 
-          // Firestoreに保存（4方向の画像URLを含む）
+          // displacementDataもFirebase Storageにアップロード（Firestoreのサイズ制限を回避）
+          const displacementRef = storage.ref(`${GALLERY_PATH}/${workId}/displacement.png`);
+          await displacementRef.putString(saveData.displacementData, 'data_url');
+          const displacementUrl = await displacementRef.getDownloadURL();
+          console.log('Displacement data uploaded:', displacementUrl);
+
+          // Firestoreに保存（URLのみを保存してサイズ制限を回避）
           await db.collection(GALLERY_PATH).doc(workId).set({
-            displacementData: saveData.displacementData,
+            displacementUrl: displacementUrl, // base64データの代わりにURLを保存
             effectValues: saveData.effectValues,
             vaseShape: saveData.vaseShape,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -3093,27 +3099,27 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
           console.log('Saved to Firestore:', workId);
           updateGlobalMood();
 
-          // サーバーAPIにも保存（Instagram投稿用）
-          await saveToServerAPI(workId, saveData, imageUrls[0], imageUrls, signatureData);
+          // サーバーAPIにも保存（Instagram投稿用）- displacementUrlを使用
+          await saveToServerAPI(workId, saveData, imageUrls[0], imageUrls, signatureData, displacementUrl);
 
           socket.emit('saveComplete', { workId, thumbnailUrl: imageUrls[0] });
 
         } catch (error) {
           console.error('Firebase upload error:', error);
           // Fallback to single image
-          await saveToServerAPI(workId, saveData, capturedImages[0], null, signatureData);
+          await saveToServerAPI(workId, saveData, capturedImages[0], null, signatureData, null);
           socket.emit('saveComplete', { workId, thumbnailUrl: capturedImages[0] });
         }
       }
 
       // Helper function to save to server API
-      async function saveToServerAPI(workId, saveData, thumbnailUrl, imageUrls, signatureData) {
+      async function saveToServerAPI(workId, saveData, thumbnailUrl, imageUrls, signatureData, displacementUrl) {
         try {
           await fetch('/api/works/' + workId, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              displacementData: saveData.displacementData,
+              displacementUrl: displacementUrl || saveData.displacementData, // URLを優先、フォールバックでbase64
               effectValues: saveData.effectValues,
               vaseShape: saveData.vaseShape,
               mode: saveData.mode,
