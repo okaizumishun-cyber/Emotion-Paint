@@ -65,7 +65,7 @@
     #top-actions {
       position: fixed;
       top: 10px;
-      right: 12このpx;
+      right: 12px;
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -107,15 +107,13 @@
 
     /* Top right button shared style (based on original #reset-btn) */
     .top-action-btn {
-      padding: 14px 40px;
-      min-width: 240px;
-      /* Equalize width */
+      padding: 8px 20px;
       border: 2px solid #FF3ED4;
       border-radius: 12px;
       background: #fff;
       color: #FF3ED4;
       font-family: 'M PLUS Rounded 1c', sans-serif;
-      font-size: 18px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
@@ -183,12 +181,95 @@
 
     /* Mode buttons at bottom left */
     #mode-buttons {
+      display: none;
+    }
+
+    #top-actions {
+      display: none;
+    }
+
+    #bottom-right-actions {
+      display: none;
+    }
+
+    #ctrl-theme-toggle {
+      display: none !important;
+    }
+
+    /* Canvas screen new UI */
+    #canvas-heading {
       position: fixed;
-      bottom: 16px;
-      left: 16px;
+      bottom: calc(50% + 240px + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: #000;
+      z-index: 1001;
+      white-space: nowrap;
+    }
+
+    #canvas-back-btn,
+    #canvas-save-btn {
+      position: fixed;
+      bottom: calc(16px + 16px);
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      height: 71px;
+      padding: 0 32px;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      z-index: 1001;
       display: flex;
-      gap: 8px;
-      z-index: 50;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #canvas-back-btn {
+      left: calc(16px + 16px);
+    }
+
+    #canvas-save-btn {
+      right: calc(16px + 16px);
+      white-space: nowrap;
+    }
+
+    #canvas-center-btns {
+      position: fixed;
+      bottom: calc(16px + 16px);
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      z-index: 1001;
+    }
+
+    #canvas-undo-btn,
+    #canvas-eraser-btn {
+      background: #000;
+      border: none;
+      border-radius: 12px;
+      width: 71px;
+      height: 71px;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #canvas-eraser-btn.active {
+      background: #fff;
+      border: 2px solid #000;
+    }
+
+    #canvas-eraser-btn.active svg {
+      stroke: #000;
     }
 
     .mode-btn {
@@ -214,6 +295,44 @@
       border-color: #00838f;
     }
 
+    /* ── Controller Frame Design ── */
+    .selection-overlay::before,
+    #controller-ui::before {
+      content: '';
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      border: 1.5px solid #333;
+      border-radius: 24px;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .selection-overlay::after,
+    #controller-ui::after {
+      content: '';
+      position: fixed;
+      width: 6px;
+      height: 6px;
+      background: #333;
+      border-radius: 50%;
+      top: calc(30vh - 3px);
+      left: calc(2vw - 3px);
+      box-shadow:
+        calc(96vw) 0 0 #333,
+        0 40vh 0 #333,
+        calc(96vw) 40vh 0 #333;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .selection-overlay.hidden::before,
+    .selection-overlay.hidden::after {
+      display: none;
+    }
+
     /* ── Selection Overlays ── */
     .selection-overlay {
       position: fixed;
@@ -223,7 +342,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: #f5f5f5;
+      background: #FFFFFF;
       opacity: 1;
       transition: opacity 0.5s ease-out;
       overflow-y: auto;
@@ -237,10 +356,10 @@
 
     .selection-overlay .step-heading {
       font-family: 'Zen Kaku Gothic New', sans-serif;
-      font-size: 32px;
+      font-size: 36px;
       font-weight: 700;
-      color: #333;
-      margin-bottom: 48px;
+      color: #000000;
+      margin-bottom: 12px;
       text-align: center;
     }
 
@@ -270,8 +389,8 @@
     }
 
     #vase-select-overlay .vase-choice img {
-      width: 200px;
-      height: 300px;
+      width: 300px;
+      height: 450px;
       object-fit: contain;
     }
 
@@ -319,9 +438,29 @@
       color: #666;
     }
 
+    #back-to-vase-btn {
+      position: fixed;
+      bottom: calc(16px + 57px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: none;
+      border: none;
+      width: 55px;
+      height: 48px;
+      font-size: 36px;
+      color: #000;
+      cursor: pointer;
+      z-index: 2001;
+      padding: 0;
+      line-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     #floating-icons {
       position: fixed;
-      top: 44px;
+      top: 0;
       left: 0;
       right: 0;
       bottom: 0;
@@ -372,23 +511,10 @@
     }
 
     @keyframes textShake {
-
-      0%,
-      100% {
-        transform: translate(0, 0) scale(1);
-      }
-
-      25% {
-        transform: translate(-2px, 0) scale(1.1);
-      }
-
-      50% {
-        transform: translate(2px, 0) scale(1.15);
-      }
-
-      75% {
-        transform: translate(-1px, 0) scale(1.05);
-      }
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(-2px, 0) scale(1.1); }
+      50% { transform: translate(2px, 0) scale(1.15); }
+      75% { transform: translate(-1px, 0) scale(1.05); }
     }
 
     /* Ripple effect */
@@ -476,7 +602,7 @@
       width: 100vw;
       height: 100vh;
       padding-top: 44px;
-      background: #1a1a1a;
+      background: #ffffff;
       transition: background 0.5s;
     }
 
@@ -535,8 +661,8 @@
       display: none;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
+      background: transparent;
+      pointer-events: none;
     }
 
     #firing-overlay.active {
@@ -546,29 +672,33 @@
 
     #firing-overlay .firing-text {
       font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: #000000;
+    }
+
+    #firing-overlay .firing-progress-bar {
+      width: 280px;
+      height: 12px;
+      border: 2px solid #000000;
+      border-radius: 6px;
+      margin-top: 16px;
+      overflow: hidden;
+    }
+
+    #firing-overlay .firing-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #000000;
+      transition: width 0.3s linear;
+    }
+
+    #firing-overlay .firing-percent {
+      font-family: 'Zen Kaku Gothic New', sans-serif;
       font-size: 36px;
       font-weight: 700;
-      color: #fff;
-      text-shadow: 0 0 40px #ff4400, 0 0 80px #ff2200;
-      animation: firingPulse 1s ease-in-out infinite alternate;
-    }
-
-    @keyframes firingPulse {
-      0% {
-        text-shadow: 0 0 20px #ff4400, 0 0 40px #ff2200;
-        opacity: 0.8;
-      }
-
-      100% {
-        text-shadow: 0 0 60px #ff6600, 0 0 120px #ff4400;
-        opacity: 1;
-      }
-    }
-
-    #firing-overlay .firing-sub {
-      font-size: 16px;
-      color: rgba(255, 255, 255, 0.7);
-      margin-top: 16px;
+      color: #000000;
+      margin-top: 12px;
     }
 
     /* ── Save Progress (Controller) ── */
@@ -619,8 +749,7 @@
       display: none;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.85);
     }
 
     #qr-popup.active {
@@ -628,34 +757,28 @@
     }
 
     #qr-popup .qr-box {
-      background: #fff;
+      background: #FFFFFF;
       border-radius: 24px;
-      padding: 40px;
+      padding: 48px;
       text-align: center;
-      box-shadow: 0 12px 60px rgba(0, 0, 0, 0.3);
-      max-width: 420px;
-      width: 90%;
+      border: 2px solid #000000;
+      max-width: 600px;
+      width: 92%;
     }
 
     #qr-popup .qr-title {
       font-family: 'Zen Kaku Gothic New', sans-serif;
-      font-size: 24px;
+      font-size: 36px;
       font-weight: 700;
-      color: #333;
-      margin-bottom: 8px;
+      color: #000000;
+      margin-bottom: 12px;
     }
 
     #qr-popup .qr-sub {
-      font-size: 14px;
-      color: #888;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 18px;
+      color: #000000;
       margin-bottom: 24px;
-    }
-
-    #qr-popup .qr-instagram-link {
-      font-size: 16px;
-      color: #FF3ED4;
-      font-weight: 600;
-      margin-bottom: 16px;
     }
 
     #qr-popup #qr-canvas-container {
@@ -663,14 +786,15 @@
     }
 
     #qr-popup .qr-close-btn {
-      padding: 12px 40px;
-      border: 2px solid #FF3ED4;
+      padding: 0 40px;
+      border: none;
       border-radius: 12px;
-      background: #FF3ED4;
-      color: #fff;
-      font-family: 'M PLUS Rounded 1c', sans-serif;
-      font-size: 16px;
+      background: #000000;
+      color: #FFFFFF;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 20px;
       font-weight: 700;
+      height: 71px;
       cursor: pointer;
     }
 
@@ -863,8 +987,8 @@
     .emotion-label {
       display: flex;
       align-items: center;
-      gap: 3px;
-      font-size: 11px;
+      gap: 4px;
+      font-size: 15px;
       color: #555;
     }
 
@@ -877,15 +1001,40 @@
 
     /* ── QR Popup emotion section ── */
     .qr-emotion-section {
-      margin: 16px 0 20px;
+      margin: 24px 0 28px;
+      padding: 24px;
+      border: 2px solid #000000;
+      border-radius: 16px;
       text-align: left;
     }
 
-    .qr-emotion-title {
-      font-size: 13px;
+    .qr-emotion-section .emotion-bar {
+      height: 16px;
+      border-radius: 8px;
+    }
+
+    .qr-emotion-section .emotion-label-row {
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .qr-emotion-section .emotion-label {
+      font-size: 18px;
       font-weight: 600;
-      color: #555;
-      margin-bottom: 8px;
+      color: #000000;
+    }
+
+    .qr-emotion-section .emotion-dot {
+      width: 14px;
+      height: 14px;
+    }
+
+    .qr-emotion-title {
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 16px;
       text-align: center;
     }
 
@@ -931,7 +1080,7 @@
   <div id="controller-ui">
     <!-- Step 1: Vase Selection Overlay -->
     <div id="vase-select-overlay" class="selection-overlay">
-      <h2 class="step-heading">1.<ruby>壺<rt>つぼ</rt></ruby>を<ruby>選<rt>えら</rt></ruby>んでください。</h2>
+      <h2 class="step-heading"><ruby>壺<rt>つぼ</rt></ruby>を<ruby>選<rt>えら</rt></ruby>んでください</h2>
       <div class="vase-choices">
         <div class="vase-choice" data-vase="vaseA">
           <img src="/VASE/vae01.png" alt="壺A">
@@ -944,8 +1093,7 @@
 
     <!-- Step 2: Background Selection Overlay -->
     <div id="bg-select-overlay" class="selection-overlay hidden">
-      <h2 class="step-heading">2.<ruby>好<rt>す</rt></ruby>きな<ruby>絵<rt>え</rt></ruby>を<ruby>選<rt>えら</rt></ruby>んでください。
-      </h2>
+      <h2 class="step-heading"><ruby>好<rt>す</rt></ruby>きな<ruby>絵<rt>え</rt></ruby>を<ruby>選<rt>えら</rt></ruby>んでください</h2>
       <div class="bg-choices">
         <div class="bg-choice" data-bg="background01.png">
           <img src="/backgrounds/background01.png" alt="背景1">
@@ -972,6 +1120,7 @@
           <span>白紙</span>
         </div>
       </div>
+      <button id="back-to-vase-btn"><svg width="55" height="48" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 4 10 9 14"/><path d="M4 10h11a5 5 0 0 1 0 10H4"/></svg></button>
     </div>
 
     <!-- Top right action buttons -->
@@ -984,6 +1133,15 @@
     <!-- Bottom right action: Save -->
     <div id="bottom-right-actions">
       <button id="save-btn">「ほぞん」する</button>
+    </div>
+
+    <!-- Canvas screen new UI -->
+    <div id="canvas-heading">アイコンをタップして<ruby>自由<rt>じゆう</rt></ruby>に<ruby>描<rt>か</rt></ruby>いてください</div>
+    <button id="canvas-back-btn">もどる</button>
+    <button id="canvas-save-btn"><ruby>焼<rt>や</rt></ruby>き<ruby>上<rt>あ</rt></ruby>げる</button>
+    <div id="canvas-center-btns">
+      <button id="canvas-undo-btn"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 4 10 9 14"/><path d="M4 10h11a5 5 0 0 1 0 10H4"/></svg></button>
+      <button id="canvas-eraser-btn"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H7L3 16c-.8-.8-.8-2 0-2.8L14.6 1.6c.8-.8 2-.8 2.8 0L21 5.2c.8.8.8 2 0 2.8L12 17"/><line x1="7" y1="20" x2="12" y2="17"/></svg></button>
     </div>
 
     <div id="floating-icons"></div>
@@ -1006,6 +1164,9 @@
       <button class="mode-btn" data-mode="parallax">Parallax</button>
       <button class="mode-btn active" data-mode="bump">Bump/Normal</button>
     </div>
+
+    <!-- Theme toggle (Controller, above mode buttons) -->
+    <button id="ctrl-theme-toggle" style="position:fixed;bottom:52px;left:16px;background:rgba(0,0,0,0.7);color:#fff;border:none;padding:6px 14px;border-radius:16px;font-size:11px;cursor:pointer;z-index:100;display:flex;align-items:center;gap:6px"><span class="theme-icon">☀️</span> Light</button>
 
     <!-- Save Progress Overlay -->
     <div id="save-progress-overlay">
@@ -1030,14 +1191,15 @@
     <!-- QR Code Popup -->
     <div id="qr-popup">
       <div class="qr-box">
-        <div class="qr-title">作品を持ち帰ろう</div>
-        <div class="qr-sub">スマホでQRコードを読み取ってください</div>
+        <div class="qr-title"><ruby>作品<rt>さくひん</rt></ruby>を<ruby>持<rt>も</rt></ruby>ち<ruby>帰<rt>かえ</rt></ruby>ろう!!</div>
+        <div class="qr-sub">スマホでQRコードを<ruby>読<rt>よ</rt></ruby>み<ruby>取<rt>と</rt></ruby>ってください</div>
         <div id="qr-canvas-container"></div>
         <div class="qr-emotion-section" id="qr-emotion-section">
-          <div class="qr-emotion-title">あなたの感情</div>
+          <div class="qr-emotion-title">あなたの<ruby>感情<rt>かんじょう</rt></ruby></div>
           <div class="emotion-bar" id="qr-emotion-bar"></div>
           <div class="emotion-label-row" id="qr-emotion-labels"></div>
         </div>
+        <div class="qr-sub">Instagramへの<ruby>投稿<rt>とうこう</rt></ruby>には<ruby>数分<rt>すうふん</rt></ruby>かかります。</div>
         <button class="qr-close-btn" id="qr-close-btn">とじる</button>
       </div>
     </div>
@@ -1045,15 +1207,16 @@
   </div>
 
   <div id="viewer-ui">
-    <button id="theme-toggle"><span class="theme-icon">☀️</span> Light</button>
+    <button id="theme-toggle" style="display:none"><span class="theme-icon">☀️</span> Light</button>
     <!-- Firing Overlay -->
     <div id="firing-overlay">
-      <div class="firing-text" id="firing-text">焼き上げ中...</div>
-      <div class="firing-sub" id="firing-sub">壺を窯で焼いています</div>
+      <div class="firing-text" id="firing-text"><ruby>焼<rt>や</rt></ruby>き<ruby>上<rt>あ</rt></ruby>げ<ruby>中<rt>ちゅう</rt></ruby>...</div>
+      <div class="firing-progress-bar"><div class="firing-progress-fill" id="firing-progress-fill"></div></div>
+      <div class="firing-percent" id="firing-percent">0%</div>
     </div>
     <!-- Gallery Overlay -->
     <div id="gallery-overlay">
-      <div class="gallery-title">GALLERY</div>
+      <div class="gallery-title" style="display:none">GALLERY</div>
       <div class="gallery-grid" id="gallery-grid"></div>
     </div>
   </div>
@@ -1118,7 +1281,7 @@
 
     const params = new URLSearchParams(location.search);
     const workId = params.get('workId');
-    const role = workId ? 'arViewer' : (params.get('role') || 'viewer');
+    const role = workId ? 'arViewer' : (params.get('screen') || params.get('role') || 'viewer');
 
     // Robust Socket.io with auto-reconnect
     let socket;
@@ -1208,10 +1371,10 @@
     // ══════════════════════════════════════════════════════════════
     const EMOTION_META = {
       joy: { label: '楽しい', icon: '🌟', hex: '#FFD700' },
-      shock: { label: '驚き', icon: '⚡', hex: '#FF8C00' },
-      sad: { label: '切ない', icon: '💧', hex: '#4682B4' },
-      confuse: { label: '混乱', icon: '🌀', hex: '#9370DB' },
-      fire: { label: '刺激的', icon: '🔥', hex: '#FF4500' }
+      shock: { label: 'おどろき', icon: '⚡', hex: '#FF8C00' },
+      sad: { label: 'せつない', icon: '💧', hex: '#4682B4' },
+      confuse: { label: 'こんらん', icon: '🌀', hex: '#9370DB' },
+      fire: { label: 'しげきてき', icon: '🔥', hex: '#FF4500' }
     };
 
     // effectValues → emotion percentages { joy: 0.4, shock: 0.2, ... }
@@ -1256,7 +1419,7 @@
 
         const label = document.createElement('span');
         label.className = 'emotion-label';
-        label.innerHTML = `<span class="emotion-dot" style="background:${EMOTION_META[emotion].hex}"></span>${EMOTION_META[emotion].icon} ${Math.round(pct * 100)}%`;
+        label.innerHTML = `${EMOTION_META[emotion].icon} ${EMOTION_META[emotion].label} ${Math.round(pct * 100)}%`;
         labelsEl.appendChild(label);
       });
     }
@@ -1264,7 +1427,7 @@
     // ══════════════════════════════════════════════════════════════
     //  CONTROLLER
     // ══════════════════════════════════════════════════════════════
-    if (role === 'controller') {
+    if (role === 'paint' || role === 'controller') {
       document.getElementById('controller-ui').style.display = 'block';
 
       const canvas = document.getElementById('paint-canvas');
@@ -1277,6 +1440,33 @@
       let currentVaseShape = null; // Set by overlay selection
       let selectedBackground = null; // Selected background file (null = blank)
       let drawing = false, lastX = 0, lastY = 0;
+      let eraserMode = false;
+      let bgImageData = null; // Cached background ImageData for eraser
+
+      // Undo stack
+      const undoStack = [];
+      const MAX_UNDO = 20;
+      function saveUndoState() {
+        undoStack.push({
+          imageData: ctx.getImageData(0, 0, canvas.width, canvas.height),
+          effects: Object.assign({}, effectValues)
+        });
+        if (undoStack.length > MAX_UNDO) undoStack.shift();
+      }
+      function performUndo() {
+        if (undoStack.length === 0) return;
+        const state = undoStack.pop();
+        ctx.putImageData(state.imageData, 0, 0);
+        // Restore effect values
+        Object.keys(state.effects).forEach(k => { effectValues[k] = state.effects[k]; });
+        emitEffects();
+        // Update slider UI if current tool is an effect
+        if (currentTool && currentTool.type === 'effect') {
+          document.getElementById('effect-range').value = effectValues[currentTool.id] * 100;
+          document.getElementById('slider-value-display').textContent = Math.round(effectValues[currentTool.id] * 100) + '%';
+        }
+        sendCanvas();
+      }
 
       const effectValues = {};
       TOOLS.filter(t => t.type === 'effect').forEach(t => effectValues[t.id] = 0);
@@ -1315,6 +1505,11 @@
           // Emit to viewer
           socket.emit('vaseShape', currentVaseShape);
 
+          // Show gray vase on viewer
+          ctx.fillStyle = '#cccccc';
+          ctx.fillRect(0, 0, TEX_W, TEX_H);
+          sendCanvas();
+
           // Transition to background selection
           vaseOverlay.classList.add('hidden');
           setTimeout(() => {
@@ -1336,16 +1531,27 @@
             // White canvas
             ctx.fillStyle = '#fff';
             ctx.fillRect(0, 0, TEX_W, TEX_H);
+            bgImageData = ctx.getImageData(0, 0, TEX_W, TEX_H);
             sendCanvas();
           } else {
             // Load background image to canvas
             const bgImg = new Image();
             bgImg.onload = () => {
               ctx.drawImage(bgImg, 0, 0, TEX_W, TEX_H);
+              bgImageData = ctx.getImageData(0, 0, TEX_W, TEX_H);
               sendCanvas();
             };
             bgImg.src = '/backgrounds/' + bgFile;
           }
+
+          // Reset effects when entering canvas screen
+          TOOLS.filter(t => t.type === 'effect').forEach(t => effectValues[t.id] = 0);
+          if (currentTool && currentTool.type === 'effect') {
+            document.getElementById('effect-range').value = 0;
+            document.getElementById('slider-value-display').textContent = '0%';
+          }
+          emitEffects();
+          undoStack.length = 0;
 
           // Dismiss background overlay and show main UI
           bgOverlay.classList.add('hidden');
@@ -1363,6 +1569,36 @@
         });
       });
 
+      // Back to vase selection from background selection
+      document.getElementById('back-to-vase-btn').addEventListener('click', () => {
+        location.reload();
+      });
+
+      // Canvas screen: back to bg select
+      document.getElementById('canvas-back-btn').addEventListener('click', () => {
+        resetForBgSelect();
+        const bgOverlay = document.getElementById('bg-select-overlay');
+        bgOverlay.style.display = 'flex';
+        bgOverlay.classList.remove('hidden');
+      });
+
+      // Canvas screen: save (same as save-btn)
+      document.getElementById('canvas-save-btn').addEventListener('click', () => {
+        document.getElementById('save-btn').click();
+      });
+
+      // Canvas screen: undo
+      document.getElementById('canvas-undo-btn').addEventListener('click', () => {
+        performUndo();
+      });
+
+      // Canvas screen: eraser toggle
+      document.getElementById('canvas-eraser-btn').addEventListener('click', () => {
+        eraserMode = !eraserMode;
+        document.getElementById('canvas-eraser-btn').classList.toggle('active', eraserMode);
+        canvas.style.cursor = eraserMode ? 'cell' : 'crosshair';
+      });
+
       // Start Over button (Restart)
       // Change Vase button (Reload)
       document.getElementById('change-vase-btn').addEventListener('click', () => {
@@ -1374,8 +1610,8 @@
       // Change Picture button (Back to Background Select)
       document.getElementById('change-bg-btn').addEventListener('click', () => {
         if (confirm('「え」をかえますか？（かいた絵は消えます）')) {
-          // Clear effects and canvas first
-          clearAll();
+          // Reset everything and show gray vase
+          resetForBgSelect();
           // Show background overlay again
           const bgOverlay = document.getElementById('bg-select-overlay');
           bgOverlay.style.display = 'flex'; // Make sure display is flex
@@ -1440,6 +1676,13 @@
       function selectTool(tool, element, index) {
         currentTool = tool;
 
+        // Turn off eraser when selecting a tool
+        if (eraserMode) {
+          eraserMode = false;
+          document.getElementById('canvas-eraser-btn').classList.remove('active');
+          canvas.style.cursor = 'crosshair';
+        }
+
         iconElements.forEach((el, i) => {
           el.classList.remove('selected');
           iconStates[i].targetScale = 1;
@@ -1462,11 +1705,21 @@
         canvas.style.cursor = specialPens.includes(tool.id) ? 'grab' : 'crosshair';
       }
 
+      // Save undo state before effect slider changes
+      let effectSliderSaved = false;
+      document.getElementById('effect-range').addEventListener('pointerdown', () => {
+        saveUndoState();
+        effectSliderSaved = true;
+      });
       document.getElementById('effect-range').addEventListener('input', (e) => {
+        if (!effectSliderSaved) { saveUndoState(); effectSliderSaved = true; }
         const val = e.target.value / 100;
         effectValues[currentTool.id] = val;
         document.getElementById('slider-value-display').textContent = Math.round(val * 100) + '%';
         emitEffects();
+      });
+      document.getElementById('effect-range').addEventListener('pointerup', () => {
+        effectSliderSaved = false;
       });
 
       function emitEffects() {
@@ -1498,15 +1751,31 @@
         }
       }
 
+      // Reset for background selection screen: clear everything and show gray vase
+      function resetForBgSelect() {
+        // Reset effects
+        TOOLS.filter(t => t.type === 'effect').forEach(t => effectValues[t.id] = 0);
+        if (currentTool && currentTool.type === 'effect') {
+          document.getElementById('effect-range').value = 0;
+          document.getElementById('slider-value-display').textContent = '0%';
+        }
+        emitEffects();
+        // Clear undo stack
+        undoStack.length = 0;
+        // Gray canvas for vase preview
+        ctx.fillStyle = '#cccccc';
+        ctx.fillRect(0, 0, TEX_W, TEX_H);
+        sendCanvas();
+      }
+
       // ══════════════════════════════════════
       //  操作UI 角丸長方形軌道アニメーション
       // ══════════════════════════════════════
-      const ORBIT_SPEED = 0.00002// 進捗(0.0~1.0)/ミリ秒
+      const ORBIT_SPEED = 0.00002;
       const ICON_SIZE = 90;
       const CANVAS_SIZE = 480;
-      const ICON_MARGIN = 30; // アイコンとキャンバス間のマージン
+      const ICON_MARGIN = 30;
 
-      // 軌道パラメータ
       let orbitPath = { cx: 0, cy: 0, segments: [], totalLength: 0 };
       let orbitStartTime = null;
 
@@ -1514,42 +1783,28 @@
         const w = window.innerWidth;
         const h = window.innerHeight;
 
-        // 画面端からのマージン (アイコン半径 + 余白40x)
-        // これにより最大サイズで画面いっぱいに広がる
         const edgeMargin = ICON_SIZE + 30 / 2 + 10;
 
         const pathW = w - edgeMargin * 2 - 200;
         const pathH = h - edgeMargin * 2;
 
-        // 角丸の半径 (短辺の20%程度)
         const r = Math.min(pathW, pathH) * 0.2;
 
-        // 軌道中心
         const cx = w / 2;
-        const cy = h / 2 - 50
+        const cy = h / 2 - 50 + 3;
 
-        // セグメント定義 (上辺から時計回り)
         const straightW = pathW - 2 * r;
         const straightH = pathH - 2 * r;
         const arcLen = 0.5 * Math.PI * r;
 
-        // 各セグメント: type, length, および計算に必要なパラメータ
         const segments = [
-          // Top Line (Left to Right)
           { type: 'line', len: straightW, startX: -straightW / 2, startY: -pathH / 2, dx: 1, dy: 0 },
-          // Top-Right Arc
           { type: 'arc', len: arcLen, cx: straightW / 2, cy: -straightH / 2, startAngle: -Math.PI / 2, endAngle: 0, r: r },
-          // Right Line (Top to Bottom)
           { type: 'line', len: straightH, startX: pathW / 2, startY: -straightH / 2, dx: 0, dy: 1 },
-          // Bottom-Right Arc
           { type: 'arc', len: arcLen, cx: straightW / 2, cy: straightH / 2, startAngle: 0, endAngle: Math.PI / 2, r: r },
-          // Bottom Line (Right to Left)
           { type: 'line', len: straightW, startX: straightW / 2, startY: pathH / 2, dx: -1, dy: 0 },
-          // Bottom-Left Arc
           { type: 'arc', len: arcLen, cx: -straightW / 2, cy: straightH / 2, startAngle: Math.PI / 2, endAngle: Math.PI, r: r },
-          // Left Line (Bottom to Top)
           { type: 'line', len: straightH, startX: -pathW / 2, startY: straightH / 2, dx: 0, dy: -1 },
-          // Top-Left Arc
           { type: 'arc', len: arcLen, cx: -straightW / 2, cy: -straightH / 2, startAngle: Math.PI, endAngle: Math.PI * 1.5, r: r }
         ];
 
@@ -1563,13 +1818,10 @@
       }
 
       function getPositionOnOrbit(progress) {
-        // 正規化された進捗 (0.0 ~ 1.0) を距離に変換
         let d = (progress % 1.0);
         if (d < 0) d += 1.0;
         d *= orbitPath.totalLength;
 
-        // 該当するセグメントを探す
-        // (線形探索だがセグメント数8個なので十分高速)
         for (const seg of orbitPath.segments) {
           if (d >= seg.startDist && d < seg.startDist + seg.len) {
             const localD = d - seg.startDist;
@@ -1580,7 +1832,7 @@
                 y: orbitPath.cy + seg.startY + seg.dy * localD
               };
             } else {
-              const p = localD / seg.len; // 0.0 ~ 1.0 inside arc
+              const p = localD / seg.len;
               const angle = seg.startAngle + (seg.endAngle - seg.startAngle) * p;
               return {
                 x: orbitPath.cx + seg.cx + Math.cos(angle) * seg.r,
@@ -1589,11 +1841,9 @@
             }
           }
         }
-        // Fallback (for precision issues at exactly 1.0)
         return { x: orbitPath.cx, y: orbitPath.cy - orbitPath.segments[0].startY };
       }
 
-      // 初期化
       calculateOrbitParams();
 
       function animateIcons(timestamp) {
@@ -1602,20 +1852,18 @@
         }
 
         const elapsed = timestamp - orbitStartTime;
-        const globalProgress = elapsed * ORBIT_SPEED;
+        const globalProgress = -elapsed * ORBIT_SPEED;
 
         const iconCount = iconElements.length;
 
         iconElements.forEach((el, i) => {
           const state = iconStates[i];
 
-          // 各アイコンを等間隔に配置 (周長ベース)
           const progressOffset = i / iconCount;
           const currentProgress = globalProgress + progressOffset;
 
           const pos = getPositionOnOrbit(currentProgress);
 
-          // スケールアニメーション
           state.scale += (state.targetScale - state.scale) * 0.1;
 
           el.style.left = (pos.x - ICON_SIZE / 2) + 'px';
@@ -1943,9 +2191,43 @@
         socket.emit('draw', { dataURL: canvas.toDataURL('image/png'), mode: currentMode, vaseShape: shape });
       }
 
+      function eraseAt(x, y) {
+        if (!bgImageData) return;
+        const half = 22; // 45px / 2 ≈ 22
+        const sx = Math.max(0, Math.floor(x - half));
+        const sy = Math.max(0, Math.floor(y - half));
+        const ex = Math.min(TEX_W, Math.ceil(x + half));
+        const ey = Math.min(TEX_H, Math.ceil(y + half));
+        const current = ctx.getImageData(sx, sy, ex - sx, ey - sy);
+        const bgData = bgImageData.data;
+        const w = ex - sx;
+        for (let row = 0; row < ey - sy; row++) {
+          for (let col = 0; col < w; col++) {
+            const ci = (row * w + col) * 4;
+            const bi = ((sy + row) * TEX_W + (sx + col)) * 4;
+            current.data[ci] = bgData[bi];
+            current.data[ci + 1] = bgData[bi + 1];
+            current.data[ci + 2] = bgData[bi + 2];
+            current.data[ci + 3] = bgData[bi + 3];
+          }
+        }
+        ctx.putImageData(current, sx, sy);
+      }
+
       function onDown(e) {
+        if (eraserMode) {
+          e.preventDefault();
+          saveUndoState();
+          drawing = true;
+          const p = getPos(e);
+          lastX = p.x; lastY = p.y;
+          eraseAt(p.x, p.y);
+          sendCanvas();
+          return;
+        }
         if (currentTool.type !== 'pen') return;
         e.preventDefault();
+        saveUndoState();
         const p = getPos(e);
         drawing = true;
         lastX = p.x; lastY = p.y;
@@ -1971,7 +2253,16 @@
       }
 
       function onMove(e) {
-        if (!drawing || currentTool.type !== 'pen') return;
+        if (!drawing) return;
+        if (eraserMode) {
+          e.preventDefault();
+          const p = getPos(e);
+          eraseAt(p.x, p.y);
+          sendCanvas();
+          lastX = p.x; lastY = p.y;
+          return;
+        }
+        if (currentTool.type !== 'pen') return;
         e.preventDefault();
         const p = getPos(e);
         const vx = p.x - lastX, vy = p.y - lastY;
@@ -2166,7 +2457,7 @@
           }
 
           showSaveResult({ workId, thumbnailUrl: saveData.displacementData });
-        }, 10000);
+        }, 30000);
       }
 
       // Save button → Show sign overlay first
@@ -2191,29 +2482,24 @@
 
       document.getElementById('qr-close-btn').addEventListener('click', () => {
         document.getElementById('qr-popup').classList.remove('active');
+        // Navigate back to vase selection screen by reloading
+        location.reload();
       });
 
-      // ══════════════════════════════════════
-      //  Idle Timer -> Gallery Mode (30s)
-      // ══════════════════════════════════════
-      let idleTimer = null;
-      const IDLE_TIMEOUT = 30000;
-
-      function resetIdleTimer() {
-        clearTimeout(idleTimer);
-        idleTimer = setTimeout(() => {
-          socket.emit('enterGallery');
-        }, IDLE_TIMEOUT);
+      // Theme toggle on Controller
+      let ctrlIsDark = true;
+      const ctrlThemeBtn = document.getElementById('ctrl-theme-toggle');
+      if (ctrlThemeBtn) {
+        ctrlThemeBtn.addEventListener('click', () => {
+          ctrlIsDark = !ctrlIsDark;
+          ctrlThemeBtn.innerHTML = ctrlIsDark
+            ? '<span class="theme-icon">☀️</span> Light'
+            : '<span class="theme-icon">🌙</span> Dark';
+          socket.emit('theme', { isDarkMode: ctrlIsDark });
+        });
       }
 
-      ['pointerdown', 'pointermove', 'keydown', 'click'].forEach(evt => {
-        document.addEventListener(evt, () => {
-          // If gallery is active, exit it on any input
-          socket.emit('exitGallery');
-          resetIdleTimer();
-        });
-      });
-      resetIdleTimer();
+      // Gallery auto-show disabled - vase stays rotating continuously
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -2227,8 +2513,8 @@
       let isDarkMode = localStorage.getItem('viewerTheme') !== 'light';
       const THEME = {
         dark: {
-          background: 0x1a1a1a,
-          fogBase: { r: 0.1, g: 0.1, b: 0.1 },
+          background: 0xffffff,
+          fogBase: { r: 1, g: 1, b: 1 },
           gridMain: 0x333333,
           gridSub: 0x222222,
           ambientBase: 0.4
@@ -2567,12 +2853,10 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
   vec4 sampledDiffuseColor = texture2D(map, mapUv);
 
   if (uSmear > 0.01) {
-    vec4 smearSum = vec4(0.0);
-    float sd = uSmear * 0.025;
-    for (float i = 0.0; i < 10.0; i += 1.0) {
-      smearSum += texture2D(map, mapUv - vec2(sd * i / 10.0, sd * i / 10.0 * 0.3));
-    }
-    sampledDiffuseColor = smearSum / 10.0;
+    float sAmt = uSmear * 0.04;
+    mapUv.x += sAmt * sin(mapUv.y * 12.0 + uTime * 3.0) * cos(uTime * 1.5);
+    mapUv.y += sAmt * cos(mapUv.x * 10.0 + uTime * 2.0) * sin(uTime * 1.8);
+    sampledDiffuseColor = texture2D(map, mapUv);
   }
 
   if (uBadtv > 0.01) {
@@ -2598,15 +2882,21 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
     vec3 ebr = texture2D(map, mapUv + vec2(e, e)).rgb;
     vec3 gx = -etl + etr - ebl + ebr;
     vec3 gy = -etl - etr + ebl + ebr;
+    float flash = pow(max(sin(uTime * 3.14159), 0.0), 8.0);
     sampledDiffuseColor.rgb += sqrt(gx * gx + gy * gy) * uEdge * 2.0;
+    sampledDiffuseColor.rgb += flash * uEdge * 0.6;
   }
   if (uBadtv > 0.01) {
     float sc = sin(mapUv.y * 480.0 * 3.14159) * 0.5 + 0.5;
     sampledDiffuseColor.rgb *= 1.0 - uBadtv * 0.25 * (1.0 - sc);
   }
   if (uVignette > 0.01) {
-    float d = length(mapUv - 0.5) * 1.6;
-    sampledDiffuseColor.rgb *= 1.0 - smoothstep(0.2, 1.3, d) * uVignette * 0.85;
+    float rAmt = uVignette * 0.03;
+    float wave1 = sin(mapUv.x * 20.0 + uTime * 2.5) * cos(mapUv.y * 15.0 + uTime * 1.8);
+    float wave2 = cos(mapUv.x * 15.0 - uTime * 2.0) * sin(mapUv.y * 20.0 - uTime * 1.5);
+    mapUv.x += wave1 * rAmt;
+    mapUv.y += wave2 * rAmt;
+    sampledDiffuseColor = texture2D(map, mapUv);
   }
   if (uPolar > 0.01) {
     vec2 c = mapUv - 0.5;
@@ -2698,12 +2988,8 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         scene.add(bottomDisc);
       }
 
-      // Grid
-      let grid = new THREE.GridHelper(8, 20,
-        isDarkMode ? THEME.dark.gridMain : THEME.light.gridMain,
-        isDarkMode ? THEME.dark.gridSub : THEME.light.gridSub
-      );
-      scene.add(grid);
+      // Grid (hidden)
+      let grid = null;
 
       // Theme toggle
       const themeToggleBtn = document.getElementById('theme-toggle');
@@ -2722,10 +3008,7 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         // Scene background
         scene.background.setHex(theme.background);
 
-        // Recreate grid with new colors
-        scene.remove(grid);
-        grid = new THREE.GridHelper(8, 20, theme.gridMain, theme.gridSub);
-        scene.add(grid);
+        // Grid removed
 
         // Save preference
         localStorage.setItem('viewerTheme', isDarkMode ? 'dark' : 'light');
@@ -2786,7 +3069,7 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
       });
 
       const particles = new THREE.Points(particleGeometry, particleMaterial);
-      scene.add(particles);
+      // scene.add(particles); // パーティクル非表示
 
       // Current emotion state
       let dominantEmotion = 'joy';
@@ -2871,8 +3154,8 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         const time = performance.now() * 0.001;
         vaseEffectUniforms.uTime.value = time;
 
-        // Vase rotation (increased speed)
-        vase.rotation.y += 0.025;
+        // Vase rotation (constant speed, 2/3 of previous)
+        vase.rotation.y += 0.00833;
 
         // Cinematic camera orbit (always active)
         cameraAngle += 0.003;
@@ -2890,7 +3173,7 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
 
         // Ambient light tint (theme-aware)
         const ambBase = isDarkMode ? THEME.dark.ambientBase : THEME.light.ambientBase;
-        const ambBoost = isDarkMode ? 0.3 : 0.2;
+        const ambBoost = isDarkMode ? 0.3 : 0.4;
         ambientLight.color.setRGB(
           ambBase + currentColor.r * ambBoost * emotionIntensity,
           ambBase + currentColor.g * ambBoost * emotionIntensity,
@@ -2900,7 +3183,7 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         // Pulsing point lights
         pointLights.forEach((pl, i) => {
           const pulse = Math.sin(time * 2 + pl.phase) * 0.5 + 0.5;
-          pl.light.intensity = emotionIntensity * pulse * 1.5;
+          pl.light.intensity = emotionIntensity * pulse * (isDarkMode ? 1.5 : 2.5);
           pl.light.color.setRGB(currentColor.r, currentColor.g, currentColor.b);
         });
 
@@ -2922,8 +3205,8 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
           if (positions[i * 3 + 2] < -5) positions[i * 3 + 2] = 5;
 
           // Color (theme-aware)
-          const colorBase = isDarkMode ? 0.5 : 0.3;
-          const colorMix = isDarkMode ? 0.5 : 0.7;
+          const colorBase = isDarkMode ? 0.5 : 0.1;
+          const colorMix = isDarkMode ? 0.5 : 0.9;
           colors[i * 3] = colorBase + currentColor.r * colorMix;
           colors[i * 3 + 1] = colorBase + currentColor.g * colorMix;
           colors[i * 3 + 2] = colorBase + currentColor.b * colorMix;
@@ -2952,9 +3235,7 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
       // ══════════════════════════════════════
       let isFiring = false;
       let firingStartTime = 0;
-      const FIRING_HEAT_DURATION = 3000;  // 3s heating
-      const FIRING_COOL_DURATION = 3000;  // 3s cooling
-      const FIRING_TOTAL = FIRING_HEAT_DURATION + FIRING_COOL_DURATION;
+      const FIRING_DURATION = 15000;  // 15s (Instagram投稿に十分な時間)
 
       // Emissive control for firing
       const originalEmissive = new THREE.Color(0x000000);
@@ -2966,66 +3247,38 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         // Show firing overlay
         const overlay = document.getElementById('firing-overlay');
         overlay.classList.add('active');
-        document.getElementById('firing-text').textContent = '焼き上げ中...';
-        document.getElementById('firing-sub').textContent = '壺を窯で焼いています';
+        const progressFill = document.getElementById('firing-progress-fill');
+        const percentEl = document.getElementById('firing-percent');
+        progressFill.style.width = '0%';
+        percentEl.textContent = '0%';
 
         // 4方向の画像を保存する配列
         const capturedImages = [];
-        const captureAngles = [0, Math.PI / 2, Math.PI, Math.PI * 3 / 2]; // 0°, 90°, 180°, 270°
-        let currentCaptureIndex = 0;
+        const captureAngles = [0, Math.PI / 2, Math.PI, Math.PI * 3 / 2];
 
         function firingTick() {
           if (!isFiring) return;
           const elapsed = performance.now() - firingStartTime;
-          const progress = Math.min(elapsed / FIRING_TOTAL, 1);
+          const progress = Math.min(elapsed / FIRING_DURATION, 1);
+          const pct = Math.round(progress * 100);
 
-          // Phase 1: Heating (0 - 3s)
-          if (elapsed < FIRING_HEAT_DURATION) {
-            const heatProgress = elapsed / FIRING_HEAT_DURATION;
-            const heatIntensity = Math.sin(heatProgress * Math.PI) * 0.8 + heatProgress * 0.6;
+          // プログレスバー・パーセント更新
+          progressFill.style.width = pct + '%';
+          percentEl.textContent = pct + '%';
 
-            [matDisplacement, matParallax, matBump].forEach(mat => {
-              mat.emissive = new THREE.Color(heatIntensity * 0.8, heatIntensity * 0.15, 0);
-              mat.emissiveIntensity = heatIntensity * 2;
-            });
+          // 壺の発光（焼き上げ演出）
+          const heatProgress = progress;
+          const heatIntensity = Math.sin(heatProgress * Math.PI) * 0.8;
+          const r = Math.min(heatIntensity * 1.0, 1.0);
+          const g = Math.pow(Math.sin(heatProgress * Math.PI), 1.5) * 0.4;
+          const b = Math.pow(Math.sin(heatProgress * Math.PI), 3) * 0.15;
 
-            vase.rotation.y += 0.03;
+          [matDisplacement, matParallax, matBump].forEach(mat => {
+            mat.emissive = new THREE.Color(r, g, b);
+            mat.emissiveIntensity = heatIntensity * 2.5;
+          });
 
-            if (heatProgress > 0.5) {
-              document.getElementById('firing-text').textContent = '焼成中';
-            }
-          }
-          // Phase 2: Cooling (3s - 6s)
-          else {
-            const coolProgress = (elapsed - FIRING_HEAT_DURATION) / FIRING_COOL_DURATION;
-            const coolIntensity = (1 - coolProgress) * 1.4;
-
-            [matDisplacement, matParallax, matBump].forEach(mat => {
-              mat.emissive = new THREE.Color(coolIntensity * 0.5, coolIntensity * 0.08, coolIntensity * 0.02);
-              mat.emissiveIntensity = coolIntensity;
-            });
-
-            vase.rotation.y += 0.02 * (1 - coolProgress) + 0.004;
-
-            document.getElementById('firing-text').textContent = '冷却中...';
-            document.getElementById('firing-sub').textContent = '色が定着しています';
-
-            // 冷却フェーズで4方向の画像をキャプチャ
-            if (currentCaptureIndex < captureAngles.length) {
-              const targetAngle = captureAngles[currentCaptureIndex];
-              const currentAngle = vase.rotation.y % (Math.PI * 2);
-
-              // 目標角度に近づいたらキャプチャ
-              if (Math.abs(currentAngle - targetAngle) < 0.1) {
-                renderer.setRenderTarget(null);
-                renderer.render(scene, camera);
-                const imageData = renderer.domElement.toDataURL('image/jpeg', 0.9);
-                capturedImages.push(imageData);
-                currentCaptureIndex++;
-                console.log(`Captured image ${currentCaptureIndex}/4 at angle ${targetAngle}`);
-              }
-            }
-          }
+          vase.rotation.y += 0.00833;
 
           if (progress >= 1) {
             isFiring = false;
@@ -3033,6 +3286,18 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
               mat.emissive = originalEmissive.clone();
               mat.emissiveIntensity = 1;
             });
+
+            // 焼成完了後に4方向を明示的にキャプチャ
+            const savedRotation = vase.rotation.y;
+            for (let i = 0; i < captureAngles.length; i++) {
+              vase.rotation.y = captureAngles[i];
+              renderer.setRenderTarget(null);
+              renderer.render(scene, camera);
+              const imageData = renderer.domElement.toDataURL('image/jpeg', 0.9);
+              capturedImages.push(imageData);
+              console.log(`Captured image ${i + 1}/4 at angle ${captureAngles[i]}`);
+            }
+            vase.rotation.y = savedRotation;
 
             overlay.classList.remove('active');
 
@@ -3057,7 +3322,6 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
 
         if (!storage || !firebaseReady) {
           console.warn('Firebase Storage not available, using fallback');
-          // Fallback to single image
           await saveToServerAPI(workId, saveData, capturedImages[0], null, signatureData);
           socket.emit('saveComplete', { workId, thumbnailUrl: capturedImages[0] });
           return;
@@ -3076,56 +3340,92 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
           });
 
           const imageUrls = await Promise.all(uploadPromises);
-          console.log('All images uploaded successfully:', imageUrls);
+          console.log('All 4 direction images uploaded:', imageUrls);
 
-          // displacementDataもFirebase Storageにアップロード（Firestoreのサイズ制限を回避）
+          // サイン画像を正方形に変換してFirebase Storageにアップロード
+          // (Instagramは1.91:1〜4:5のアスペクト比のみ対応)
+          let signatureUrl = null;
+          if (signatureData) {
+            const squareData = await (function() {
+              return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                  const size = 1080;
+                  const c = document.createElement('canvas');
+                  c.width = size; c.height = size;
+                  const ctx = c.getContext('2d');
+                  ctx.fillStyle = '#ffffff';
+                  ctx.fillRect(0, 0, size, size);
+                  const scale = Math.min((size * 0.8) / img.width, (size * 0.4) / img.height);
+                  const w = img.width * scale;
+                  const h = img.height * scale;
+                  ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+                  resolve(c.toDataURL('image/jpeg', 0.9));
+                };
+                img.src = signatureData;
+              });
+            })();
+            const signRef = storage.ref(`${GALLERY_PATH}/${workId}/signature.jpg`);
+            await signRef.putString(squareData, 'data_url');
+            signatureUrl = await signRef.getDownloadURL();
+            console.log('Signature image uploaded (1:1):', signatureUrl);
+          }
+
+          // displacementDataもFirebase Storageにアップロード
           const displacementRef = storage.ref(`${GALLERY_PATH}/${workId}/displacement.png`);
           await displacementRef.putString(saveData.displacementData, 'data_url');
           const displacementUrl = await displacementRef.getDownloadURL();
           console.log('Displacement data uploaded:', displacementUrl);
 
-          // Firestoreに保存（URLのみを保存してサイズ制限を回避）
-          await db.collection(GALLERY_PATH).doc(workId).set({
-            displacementUrl: displacementUrl, // base64データの代わりにURLを保存
-            effectValues: saveData.effectValues,
-            vaseShape: saveData.vaseShape,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            thumbnailUrl: imageUrls[0], // 最初の画像をサムネイルとして使用
-            imageUrls: imageUrls, // 4方向の画像URL配列
-            mode: saveData.mode,
-            signatureData: signatureData
-          });
+          // Firestoreに保存（URLのみ）
+          if (db && firebaseReady) {
+            try {
+              await db.collection(GALLERY_PATH).doc(workId).set({
+                displacementUrl: displacementUrl,
+                effectValues: saveData.effectValues,
+                vaseShape: saveData.vaseShape,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                thumbnailUrl: imageUrls[0],
+                imageUrls: imageUrls,
+                mode: saveData.mode,
+                signatureData: signatureData,
+                signatureUrl: signatureUrl
+              });
+              console.log('Saved to Firestore:', workId);
+            } catch (e) {
+              console.warn('Firestore save error (non-fatal):', e.message);
+            }
+          }
 
-          console.log('Saved to Firestore:', workId);
           updateGlobalMood();
 
-          // サーバーAPIにも保存（Instagram投稿用）- displacementUrlを使用
-          await saveToServerAPI(workId, saveData, imageUrls[0], imageUrls, signatureData, displacementUrl);
+          // サーバーAPIにも保存（Instagram投稿用）- サイン画像URLも含める
+          await saveToServerAPI(workId, saveData, imageUrls[0], imageUrls, signatureData, displacementUrl, signatureUrl);
 
           socket.emit('saveComplete', { workId, thumbnailUrl: imageUrls[0] });
 
         } catch (error) {
           console.error('Firebase upload error:', error);
-          // Fallback to single image
           await saveToServerAPI(workId, saveData, capturedImages[0], null, signatureData, null);
           socket.emit('saveComplete', { workId, thumbnailUrl: capturedImages[0] });
         }
       }
 
       // Helper function to save to server API
-      async function saveToServerAPI(workId, saveData, thumbnailUrl, imageUrls, signatureData, displacementUrl) {
+      async function saveToServerAPI(workId, saveData, thumbnailUrl, imageUrls, signatureData, displacementUrl, signatureUrl) {
         try {
           await fetch('/api/works/' + workId, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              displacementUrl: displacementUrl || saveData.displacementData, // URLを優先、フォールバックでbase64
+              displacementUrl: displacementUrl || saveData.displacementData,
               effectValues: saveData.effectValues,
               vaseShape: saveData.vaseShape,
               mode: saveData.mode,
               thumbnailUrl: thumbnailUrl,
-              imageUrls: imageUrls, // 4方向の画像URL（nullの場合は単一画像）
-              signatureData: signatureData
+              imageUrls: imageUrls,
+              signatureData: signatureData,
+              signatureUrl: signatureUrl
             })
           });
           console.log('Saved to server API:', workId);
@@ -3136,9 +3436,15 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
 
       // Listen for save event from controller
       socket.on('save', (data) => {
+        console.log('Viewer received save event, starting firing animation...');
         if (!isFiring) {
           startFiringAnimation(data);
         }
+      });
+
+      socket.on('theme', (data) => {
+        isDarkMode = data.isDarkMode;
+        applyTheme();
       });
 
       // ══════════════════════════════════════

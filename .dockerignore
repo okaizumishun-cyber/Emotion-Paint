@@ -1,0 +1,12 @@
+node_modules
+.env
+.env.example
+.firebase
+.git
+.github
+*.md
+cors.json
+test-*.js
+public/uploads
+nul
+新しいフォルダー
