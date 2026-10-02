@@ -57,6 +57,15 @@ function buildCaption(effectValues) {
 
 // JSON body parser (50MB limit for base64 images)
 app.use(express.json({ limit: '50mb' }));
+
+// Redirect root URL without parameters to ?role=viewer
+app.get('/', (req, res, next) => {
+  if (!req.query.role && !req.query.screen && !req.query.workId) {
+    return res.redirect('/?role=viewer');
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ══════════════════════════════════════
@@ -557,6 +566,6 @@ io.on('connection', (socket) => {
 
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
-  console.log(`Controller: http://localhost:${PORT}?role=controller`);
-  console.log(`Viewer:     http://localhost:${PORT}?role=viewer`);
+  console.log(`📱 コントローラー (お絵描き画面): http://localhost:${PORT}/?role=controller`);
+  console.log(`🖥️ ビューアー (3D壺画面):         http://localhost:${PORT}/?role=viewer`);
 });

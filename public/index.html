@@ -1283,6 +1283,10 @@
     const workId = params.get('workId');
     const role = workId ? 'arViewer' : (params.get('screen') || params.get('role') || 'viewer');
 
+    if (!workId && !params.get('screen') && !params.get('role')) {
+      history.replaceState(null, '', '?role=viewer');
+    }
+
     // Robust Socket.io with auto-reconnect
     let socket;
     try {
