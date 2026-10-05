@@ -133,7 +133,6 @@
 | `draw` | タブレット | 縦型モニター | `{ dataURL: 'data:image/png;base64,...', mode, vaseShape }`<br>【ペン系15種】手元Canvasで描画されたUVテクスチャ画像全体（PNG DataURL） |
 | `emotion` | タブレット | 縦型モニター | `{ melt: 0.8, wobble: 0.5, badtv: 0.0, ... }`<br>【エフェクト系10種】各エフェクトスライダーの強度パラメータ（0.0〜1.0）の軽量JSON |
 | `vaseShape` | タブレット | 縦型モニター | `vaseShape` 壺の形状識別子 |
-| `theme` | タブレット | 縦型モニター | 背景テーマ識別子 |
 | `save` | タブレット | 縦型モニター | `{ ...saveData, signatureData: 'data:image/jpeg;base64,...' }`<br>キャプチャ開始トリガー ＋ サイン画像データ |
 | `saveComplete` | 縦型モニター | タブレット | `{ workId, thumbnailUrl }`<br>保存完了通知（これを受信したタブレットがQRコードを表示） |
 
@@ -313,5 +312,44 @@
   - 外壁面のUVマッピングが口の縁で折り返され、口（$V=1.0$）から内底（$V=0.0$）へ向かって**反転マッピング**されます。これにより、壺の内側を上から覗き込んだ際にも絵柄が自然に回り込んで見えます。
 - **底面ディスク（Bottom Disc）**:
   - 壺の裏側（底板）にはキャンバステクスチャ全体が円形に丸く独立マッピングされ、底面を露出させたアングルでも絵柄が美しく確認できます。
+
+---
+
+## 7. セキュリティルール・環境設定・システム堅牢化仕様
+
+### ① Firestore セキュリティルール仕様
+- **対象パス**: `/artifacts/{appId}/public/data/gallery/{workId}`
+- **読み取り（read）**: `allow read: if false;`
+  - ギャラリー機能・globalMoodの完全廃止に伴い、クライアント・サーバーともにFirestore読み取り処理は完全撤廃。不正な作品データの一括取得やスキャンを完全に遮断。
+- **新規作成（create）**: `allow create: if request.auth != null && request.resource.data.keys().hasOnly(['displacementUrl', 'effectValues', 'vaseShape', 'timestamp', 'thumbnailUrl', 'imageUrls', 'mode', 'signatureUrl']);`
+  - 匿名認証済みクライアントに限定。
+  - ホワイトリストで指定された8項目以外のフィールド書き込みを拒絶。
+  - ドキュメントサイズ肥大化（1MiB上限超過リスク）および情報漏洩を防ぐため、Base64画像データ（`signatureData` 等）の保存を排除し、Storage URLのみを許可。
+- **更新・削除（update, delete）**: `allow update, delete: if false;`
+  - 作品の改ざんや第三者による削除を全面禁止。
+
+### ② Cloud Storage セキュリティルール仕様
+- **対象パス**: `/artifacts/{appId}/public/data/gallery/{workId}/{allPaths=**}`
+- **読み取り（read）**: `allow read: if true;`
+  - Instagram Graph API が外部から作品画像を正常にダウンロード・カルーセル投稿するために公開設定を維持。
+- **新規作成（create）**: `allow create: if request.auth != null && request.resource.contentType.matches('image/(jpeg|png)') && request.resource.size < 5 * 1024 * 1024;`
+  - 匿名認証済みクライアントに限定。
+  - MIMEタイプを `image/jpeg` および `image/png` に制限（実行可能ファイル等の不正アップロード防止）。
+  - アップロードサイズを 5MB 未満に厳格制限（実測値: JPEG 200〜800KB、サイン 50〜150KB、displacement 50〜300KB に対し十分かつ安全な上限値）。
+- **更新・削除（update, delete）**: `allow update, delete: if false;`
+  - 保存済み作品画像の上書き・改ざん・消去を全面禁止。
+
+### ③ ギャラリー機能・globalMood・テーマ切替の完全廃止
+- **ギャラリー・globalMoodの削除**:
+  - `GET /api/works`（作品一覧API）をサーバーから削除し、第三者による未公開作品の不正閲覧リスクを根絶。
+  - `globalMood` に依存していたパーティクル不透明度を固定値（`0.6`）化（パーティクル自体は現在非表示コメントアウト設定）。
+- **ライトモード固定**:
+  - 展示会場の視認性を安定させるため、ダークモード切り替えUI（`#ctrl-theme-toggle`, `#theme-toggle`）および `theme` イベントを撤廃。
+  - 背景色（`0xf0f0f0`）、環境光基本値（`ambientBase: 0.6`, `ambBoost: 0.4`）、点光源倍率（`2.5`）をライトモード専用値に固定。
+
+### ④ Cloud Run スケーリング仕様
+- **シングルインスタンス運用（min: 1, max: 1）**:
+  - メモリ上のセッション・トークン・作品キャッシュの整合性を担保し、同時接続時の同期ズレやインスタンス間不整合を完全に防止。
+
 
 

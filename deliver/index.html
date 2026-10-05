@@ -192,10 +192,6 @@
       display: none;
     }
 
-    #ctrl-theme-toggle {
-      display: none !important;
-    }
-
     /* Canvas screen new UI */
     #canvas-heading {
       position: fixed;
@@ -614,45 +610,6 @@
       display: block;
     }
 
-    /* Theme toggle button */
-    #theme-toggle {
-      position: fixed;
-      top: 54px;
-      left: 10px;
-      background: rgba(0, 0, 0, 0.7);
-      color: #fff;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 16px;
-      font-size: 11px;
-      font-family: 'M PLUS Rounded 1c', sans-serif;
-      cursor: pointer;
-      z-index: 100;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    #theme-toggle:hover {
-      background: rgba(0, 0, 0, 0.85);
-    }
-
-    #viewer-ui.light-mode #theme-toggle {
-      background: rgba(255, 255, 255, 0.9);
-      color: #333;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    #viewer-ui.light-mode #theme-toggle:hover {
-      background: rgba(255, 255, 255, 1);
-    }
-
-    .theme-icon {
-      font-size: 14px;
-      line-height: 1;
-    }
-
     /* ── Firing Overlay (Viewer) ── */
     #firing-overlay {
       position: fixed;
@@ -1051,9 +1008,6 @@
       <button class="mode-btn active" data-mode="bump">Bump/Normal</button>
     </div>
 
-    <!-- Theme toggle (Controller, above mode buttons) -->
-    <button id="ctrl-theme-toggle" style="position:fixed;bottom:52px;left:16px;background:rgba(0,0,0,0.7);color:#fff;border:none;padding:6px 14px;border-radius:16px;font-size:11px;cursor:pointer;z-index:100;display:flex;align-items:center;gap:6px"><span class="theme-icon">☀️</span> Light</button>
-
     <!-- Save Progress Overlay -->
     <div id="save-progress-overlay">
       <div class="progress-box">
@@ -1093,7 +1047,6 @@
   </div>
 
   <div id="viewer-ui">
-    <button id="theme-toggle" style="display:none"><span class="theme-icon">☀️</span> Light</button>
     <!-- Firing Overlay -->
     <div id="firing-overlay">
       <div class="firing-text" id="firing-text"><ruby>焼<rt>や</rt></ruby>き<ruby>上<rt>あ</rt></ruby>げ<ruby>中<rt>ちゅう</rt></ruby>...</div>
@@ -2307,18 +2260,6 @@
           }).then(() => console.log('Saved to server API:', workId))
             .catch(e => console.error('Server save error:', e));
 
-          if (db && firebaseReady) {
-            db.collection(GALLERY_PATH).doc(workId).set({
-              displacementData: saveData.displacementData,
-              effectValues: saveData.effectValues,
-              vaseShape: saveData.vaseShape,
-              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-              thumbnailUrl: saveData.displacementData,
-              mode: saveData.mode,
-              signatureData: signature
-            }).catch(e => console.warn('Firestore save error:', e));
-          }
-
           showSaveResult({ workId, thumbnailUrl: saveData.displacementData });
         }, 30000);
       }
@@ -2349,19 +2290,6 @@
         location.reload();
       });
 
-      // Theme toggle on Controller
-      let ctrlIsDark = true;
-      const ctrlThemeBtn = document.getElementById('ctrl-theme-toggle');
-      if (ctrlThemeBtn) {
-        ctrlThemeBtn.addEventListener('click', () => {
-          ctrlIsDark = !ctrlIsDark;
-          ctrlThemeBtn.innerHTML = ctrlIsDark
-            ? '<span class="theme-icon">☀️</span> Light'
-            : '<span class="theme-icon">🌙</span> Dark';
-          socket.emit('theme', { isDarkMode: ctrlIsDark });
-        });
-      }
-
       // Gallery auto-show disabled - vase stays rotating continuously
     }
 
@@ -2372,23 +2300,13 @@
       const container = document.getElementById('viewer-ui');
       container.style.display = 'block';
 
-      // Theme state
-      let isDarkMode = localStorage.getItem('viewerTheme') !== 'light';
+      // Theme state (Fixed to Light Mode)
       const THEME = {
-        dark: {
-          background: 0xffffff,
-          fogBase: { r: 1, g: 1, b: 1 },
-          gridMain: 0x333333,
-          gridSub: 0x222222,
-          ambientBase: 0.4
-        },
-        light: {
-          background: 0xf0f0f0,
-          fogBase: { r: 0.9, g: 0.9, b: 0.9 },
-          gridMain: 0xcccccc,
-          gridSub: 0xdddddd,
-          ambientBase: 0.6
-        }
+        background: 0xf0f0f0,
+        fogBase: { r: 0.9, g: 0.9, b: 0.9 },
+        gridMain: 0xcccccc,
+        gridSub: 0xdddddd,
+        ambientBase: 0.6
       };
 
       const texCanvas = document.createElement('canvas');
@@ -2407,7 +2325,7 @@
       normalCtx.fillStyle = '#8080ff'; normalCtx.fillRect(0, 0, TEX_W, TEX_H);
 
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(isDarkMode ? THEME.dark.background : THEME.light.background);
+      scene.background = new THREE.Color(THEME.background);
 
 
       const viewW = window.innerWidth, viewH = window.innerHeight - 44;
@@ -2854,41 +2772,8 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
       // Grid (hidden)
       let grid = null;
 
-      // Theme toggle
-      const themeToggleBtn = document.getElementById('theme-toggle');
-      if (!isDarkMode) container.classList.add('light-mode');
-      updateThemeButton();
-
-      function updateThemeButton() {
-        themeToggleBtn.innerHTML = isDarkMode
-          ? '<span class="theme-icon">☀️</span> Light'
-          : '<span class="theme-icon">🌙</span> Dark';
-      }
-
-      function applyTheme() {
-        const theme = isDarkMode ? THEME.dark : THEME.light;
-
-        // Scene background
-        scene.background.setHex(theme.background);
-
-        // Grid removed
-
-        // Save preference
-        localStorage.setItem('viewerTheme', isDarkMode ? 'dark' : 'light');
-
-        // Update UI
-        if (isDarkMode) {
-          container.classList.remove('light-mode');
-        } else {
-          container.classList.add('light-mode');
-        }
-        updateThemeButton();
-      }
-
-      themeToggleBtn.addEventListener('click', () => {
-        isDarkMode = !isDarkMode;
-        applyTheme();
-      });
+      // Fixed to Light Mode
+      container.classList.add('light-mode');
 
       function setMode(mode) {
         currentMode = mode;
@@ -3034,19 +2919,19 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         currentColor.g += (targetColor.g - currentColor.g) * 0.02;
         currentColor.b += (targetColor.b - currentColor.b) * 0.02;
 
-        // Ambient light tint (theme-aware)
-        const ambBase = isDarkMode ? THEME.dark.ambientBase : THEME.light.ambientBase;
-        const ambBoost = isDarkMode ? 0.3 : 0.4;
+        // Ambient light tint (Light mode fixed)
+        const ambBase = THEME.ambientBase;
+        const ambBoost = 0.4;
         ambientLight.color.setRGB(
           ambBase + currentColor.r * ambBoost * emotionIntensity,
           ambBase + currentColor.g * ambBoost * emotionIntensity,
           ambBase + currentColor.b * ambBoost * emotionIntensity
         );
 
-        // Pulsing point lights
+        // Pulsing point lights (Light mode fixed: 2.5x)
         pointLights.forEach((pl, i) => {
           const pulse = Math.sin(time * 2 + pl.phase) * 0.5 + 0.5;
-          pl.light.intensity = emotionIntensity * pulse * (isDarkMode ? 1.5 : 2.5);
+          pl.light.intensity = emotionIntensity * pulse * 2.5;
           pl.light.color.setRGB(currentColor.r, currentColor.g, currentColor.b);
         });
 
@@ -3067,9 +2952,9 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
           if (positions[i * 3 + 2] > 5) positions[i * 3 + 2] = -5;
           if (positions[i * 3 + 2] < -5) positions[i * 3 + 2] = 5;
 
-          // Color (theme-aware)
-          const colorBase = isDarkMode ? 0.5 : 0.1;
-          const colorMix = isDarkMode ? 0.5 : 0.9;
+          // Color (Light mode fixed)
+          const colorBase = 0.1;
+          const colorMix = 0.9;
           colors[i * 3] = colorBase + currentColor.r * colorMix;
           colors[i * 3 + 1] = colorBase + currentColor.g * colorMix;
           colors[i * 3 + 2] = colorBase + currentColor.b * colorMix;
@@ -3251,7 +3136,6 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
                 thumbnailUrl: imageUrls[0],
                 imageUrls: imageUrls,
                 mode: saveData.mode,
-                signatureData: signatureData,
                 signatureUrl: signatureUrl
               });
               console.log('Saved to Firestore:', workId);
@@ -3301,11 +3185,6 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         if (!isFiring) {
           startFiringAnimation(data);
         }
-      });
-
-      socket.on('theme', (data) => {
-        isDarkMode = data.isDarkMode;
-        applyTheme();
       });
     }
   </script>

@@ -1,14 +1,26 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ギャラリーコレクション配下の作品ドキュメント
+    // Gallery collection works
     match /artifacts/{appId}/public/data/gallery/{workId} {
-      allow read: if true;                          // 作品閲覧・一覧取得は誰でも可能
-      allow create, update: if request.auth != null;// 匿名認証済みの手元タブレット/縦型モニターのみ書き込み可能
-      allow delete: if false;                       // 外部からの削除は禁止
+      // Disallow read, update, delete (client read operations completely removed)
+      allow read, update, delete: if false;
+
+      // Allow create only: authenticated anonymous user and strictly whitelisted fields
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly([
+          'displacementUrl',
+          'effectValues',
+          'vaseShape',
+          'timestamp',
+          'thumbnailUrl',
+          'imageUrls',
+          'mode',
+          'signatureUrl'
+        ]);
     }
     
-    // その他のパスは安全のためすべて拒絶
+    // Disallow all other documents
     match /{document=**} {
       allow read, write: if false;
     }

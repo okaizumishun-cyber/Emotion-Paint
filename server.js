@@ -525,7 +525,6 @@ io.on('connection', (socket) => {
   socket.on('draw', (data) => socket.broadcast.emit('draw', data));
   socket.on('emotion', (data) => socket.broadcast.emit('emotion', data));
   socket.on('vaseShape', (data) => socket.broadcast.emit('vaseShape', data));
-  socket.on('theme', (data) => socket.broadcast.emit('theme', data));
 
   socket.on('save', (data) => {
     console.log('Save triggered, forwarding to viewer...');

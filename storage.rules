@@ -1,15 +1,24 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // ギャラリー配下の作品画像ファイル
+    // Gallery artwork files
     match /artifacts/{appId}/public/data/gallery/{workId}/{allPaths=**} {
-      allow read: if true;                          // 作品画像の閲覧・ダウンロードは公開
-      allow write: if request.auth != null;         // 匿名認証済みの手元タブレット/縦型モニターのみアップロード可能
+      // Public read required for Instagram Graph API download
+      allow read: if true;
+
+      // Allow create only: authenticated anonymous user, image files only, max 5MB
+      allow create: if request.auth != null
+        && request.resource.contentType.matches('image/(jpeg|png)')
+        && request.resource.size < 5 * 1024 * 1024;
+
+      // Disallow update and delete
+      allow update, delete: if false;
     }
     
-    // その他のパスは安全のためすべて拒絶
+    // Disallow all other paths
     match /{allPaths=**} {
       allow read, write: if false;
     }
   }
 }
+
