@@ -146,14 +146,6 @@ app.get('/api/works/:id', (req, res) => {
   res.json(work);
 });
 
-// List all works (for gallery)
-app.get('/api/works', (req, res) => {
-  const list = [];
-  works.forEach((val, key) => list.push({ id: key, ...val }));
-  list.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
-  res.json(list.slice(0, 50));
-});
-
 // ══════════════════════════════════════
 //  Image Upload API (replaces Firebase Storage to avoid CORS)
 // ══════════════════════════════════════
@@ -527,9 +519,6 @@ async function exchangeToken(){
 </script></body></html>`);
 });
 
-// Global mood state
-let globalMood = { melt: 0, tiltshift: 0, badtv: 0, edge: 0, slices: 0, vignette: 0, wobble: 0, polar: 0, smear: 0, dot: 0 };
-
 io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.id}`);
 
@@ -547,17 +536,6 @@ io.on('connection', (socket) => {
     console.log(`Save complete: workId=${data.workId}`);
     socket.broadcast.emit('saveComplete', data);
   });
-
-  socket.on('enterGallery', () => socket.broadcast.emit('enterGallery'));
-  socket.on('exitGallery', () => socket.broadcast.emit('exitGallery'));
-  socket.on('loadWork', (data) => socket.broadcast.emit('loadWork', data));
-
-  socket.on('updateGlobalMood', (data) => {
-    globalMood = data;
-    io.emit('globalMood', globalMood);
-  });
-
-  socket.emit('globalMood', globalMood);
 
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);

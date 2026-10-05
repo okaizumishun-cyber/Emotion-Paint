@@ -870,97 +870,6 @@
       color: #fff;
     }
 
-    /* ── Share Page (replaces gallery) ── */
-    #ar-viewer-ui {
-      display: none;
-      width: 100vw;
-      min-height: 100vh;
-      background: #fafafa;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .share-page {
-      max-width: 480px;
-      width: 100%;
-      padding: 20px 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .share-header {
-      font-family: 'Zen Kaku Gothic New', sans-serif;
-      font-size: 22px;
-      font-weight: 900;
-      color: #262626;
-      text-align: center;
-      padding: 16px 0;
-    }
-
-    .share-preview {
-      width: 100%;
-      aspect-ratio: 1;
-      background: #1a1a1a;
-      border-radius: 12px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .share-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .share-emotion {
-      width: 100%;
-      padding: 12px 0;
-    }
-
-    .share-actions {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .share-btn {
-      width: 100%;
-      padding: 16px;
-      border: none;
-      border-radius: 12px;
-      font-family: 'M PLUS Rounded 1c', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    .share-btn:active {
-      opacity: 0.8;
-    }
-
-    .share-btn.instagram {
-      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-      color: #fff;
-    }
-
-    .share-btn.download {
-      background: #262626;
-      color: #fff;
-    }
-
-    .share-message {
-      font-size: 14px;
-      color: #8e8e8e;
-      text-align: center;
-      min-height: 20px;
-    }
-
     /* ── Emotion Bar (shared) ── */
     .emotion-bar {
       display: flex;
@@ -1036,29 +945,6 @@
       color: #000000;
       margin-bottom: 16px;
       text-align: center;
-    }
-
-    /* ── Mobile Gallery emotion ── */
-    .ig-emotion-summary {
-      padding: 0 16px 12px;
-      border-bottom: 1px solid #dbdbdb;
-    }
-
-    .ig-emotion-summary .emotion-bar {
-      height: 10px;
-      border-radius: 5px;
-    }
-
-    .ig-featured-emotion {
-      padding: 8px 16px 12px;
-    }
-
-    .ig-grid-item.has-emotion {
-      border-bottom: 4px solid var(--emotion-color, transparent);
-    }
-
-    .ig-detail-emotion {
-      padding: 8px 16px 4px;
     }
   </style>
   <!-- Firebase SDK -->
@@ -1214,32 +1100,6 @@
       <div class="firing-progress-bar"><div class="firing-progress-fill" id="firing-progress-fill"></div></div>
       <div class="firing-percent" id="firing-percent">0%</div>
     </div>
-    <!-- Gallery Overlay -->
-    <div id="gallery-overlay">
-      <div class="gallery-title" style="display:none">GALLERY</div>
-      <div class="gallery-grid" id="gallery-grid"></div>
-    </div>
-  </div>
-
-  <!-- Mobile Gallery (Instagram-style, for ?workId=XXX) -->
-  <div id="ar-viewer-ui">
-    <div class="share-page">
-      <div class="share-header">EMOTION PAINT</div>
-      <div class="share-preview" id="share-preview"></div>
-      <div class="share-emotion" id="share-emotion">
-        <div class="emotion-bar" id="share-emotion-bar"></div>
-        <div class="emotion-label-row" id="share-emotion-labels"></div>
-      </div>
-      <div class="share-actions">
-        <button class="share-btn instagram" id="share-instagram-btn">
-          Instagramでシェア
-        </button>
-        <button class="share-btn download" id="share-download-btn">
-          画像を保存
-        </button>
-      </div>
-      <div class="share-message" id="share-message"></div>
-    </div>
   </div>
 
   <script src="https://cdn.socket.io/4.7.4/socket.io.min.js" crossorigin="anonymous"></script>
@@ -1280,10 +1140,9 @@
     const GALLERY_PATH = `artifacts/${appId}/public/data/gallery`;
 
     const params = new URLSearchParams(location.search);
-    const workId = params.get('workId');
-    const role = workId ? 'arViewer' : (params.get('screen') || params.get('role') || 'viewer');
+    const role = params.get('screen') || params.get('role') || 'viewer';
 
-    if (!workId && !params.get('screen') && !params.get('role')) {
+    if (!params.get('screen') && !params.get('role')) {
       history.replaceState(null, '', '?role=viewer');
     }
 
@@ -3401,8 +3260,6 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
             }
           }
 
-          updateGlobalMood();
-
           // サーバーAPIにも保存（Instagram投稿用）- サイン画像URLも含める
           await saveToServerAPI(workId, saveData, imageUrls[0], imageUrls, signatureData, displacementUrl, signatureUrl);
 
@@ -3450,245 +3307,6 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
         isDarkMode = data.isDarkMode;
         applyTheme();
       });
-
-      // ══════════════════════════════════════
-      //  Gallery Mode (Viewer)
-      // ══════════════════════════════════════
-      let galleryActive = false;
-
-      async function loadGalleryWorks() {
-        if (!db || !firebaseReady) return [];
-        try {
-          const snapshot = await db.collection(GALLERY_PATH)
-            .orderBy('timestamp', 'desc')
-            .limit(50)
-            .get();
-          return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } catch (e) {
-          console.error('Gallery load error:', e);
-          return [];
-        }
-      }
-
-      async function enterGalleryMode() {
-        if (galleryActive) return;
-        galleryActive = true;
-
-        const overlay = document.getElementById('gallery-overlay');
-        const grid = document.getElementById('gallery-grid');
-        grid.innerHTML = '';
-
-        const works = await loadGalleryWorks();
-
-        if (works.length === 0) {
-          grid.innerHTML = '<div style="color:#666;text-align:center;grid-column:1/-1;padding:60px;font-size:18px;">まだ作品がありません</div>';
-        } else {
-          works.forEach(work => {
-            const item = document.createElement('div');
-            item.className = 'gallery-item';
-            const img = document.createElement('img');
-            img.src = work.thumbnailUrl || '';
-            img.alt = work.id;
-            img.loading = 'lazy';
-            item.appendChild(img);
-            item.addEventListener('click', () => {
-              // Load this work into the viewer
-              exitGalleryMode();
-              loadWorkIntoViewer(work);
-            });
-            grid.appendChild(item);
-          });
-        }
-
-        overlay.classList.add('active');
-      }
-
-      function exitGalleryMode() {
-        if (!galleryActive) return;
-        galleryActive = false;
-        document.getElementById('gallery-overlay').classList.remove('active');
-      }
-
-      function loadWorkIntoViewer(work) {
-        // Restore vase shape
-        if (work.vaseShape) setVaseShape(work.vaseShape);
-
-        // Restore canvas texture
-        if (work.displacementData) {
-          const img = new Image();
-          img.onload = () => {
-            texCtx.clearRect(0, 0, TEX_W, TEX_H);
-            texCtx.drawImage(img, 0, 0, TEX_W, TEX_H);
-            canvasTexture.needsUpdate = true;
-            buildHeightMap();
-            buildNormalMap();
-            if (work.mode) setMode(work.mode);
-          };
-          img.src = work.displacementData;
-        }
-
-        // Restore effects
-        if (work.effectValues) {
-          const data = work.effectValues;
-          vaseEffectUniforms.uMelt.value = data.melt || 0;
-          vaseEffectUniforms.uTiltshift.value = data.tiltshift || 0;
-          vaseEffectUniforms.uBadtv.value = data.badtv || 0;
-          vaseEffectUniforms.uEdge.value = data.edge || 0;
-          vaseEffectUniforms.uSlices.value = data.slices || 0;
-          vaseEffectUniforms.uVignette.value = data.vignette || 0;
-          vaseEffectUniforms.uWobble.value = data.wobble || 0;
-          vaseEffectUniforms.uPolar.value = data.polar || 0;
-          vaseEffectUniforms.uSmear.value = data.smear || 0;
-          vaseEffectUniforms.uDot.value = data.dot || 0;
-        }
-      }
-
-      socket.on('enterGallery', () => enterGalleryMode());
-      socket.on('exitGallery', () => exitGalleryMode());
-      socket.on('loadWork', (data) => loadWorkIntoViewer(data));
-
-      // ══════════════════════════════════════
-      //  Global Mood (感情の集積)
-      // ══════════════════════════════════════
-      let globalMoodData = {};
-
-      async function updateGlobalMood() {
-        if (!db || !firebaseReady) return;
-        try {
-          const snapshot = await db.collection(GALLERY_PATH).get();
-          const totals = { melt: 0, tiltshift: 0, badtv: 0, edge: 0, slices: 0, vignette: 0, wobble: 0, polar: 0, smear: 0, dot: 0 };
-          let count = 0;
-
-          snapshot.forEach(doc => {
-            const d = doc.data();
-            if (d.effectValues) {
-              Object.keys(totals).forEach(k => {
-                totals[k] += (d.effectValues[k] || 0);
-              });
-              count++;
-            }
-          });
-
-          if (count > 0) {
-            Object.keys(totals).forEach(k => totals[k] /= count);
-          }
-
-          globalMoodData = totals;
-          socket.emit('updateGlobalMood', totals);
-          applyGlobalMood(totals);
-        } catch (e) {
-          console.error('Global mood calculation error:', e);
-        }
-      }
-
-      function applyGlobalMood(mood) {
-        // Determine dominant emotion from global averages
-        const emotionSums = {
-          joy: (mood.melt || 0) + (mood.tiltshift || 0),
-          shock: (mood.badtv || 0) + (mood.edge || 0),
-          sad: (mood.slices || 0) + (mood.vignette || 0),
-          confuse: (mood.wobble || 0) + (mood.polar || 0),
-          fire: (mood.smear || 0) + (mood.dot || 0)
-        };
-
-        let maxEmo = 'joy', maxVal = 0;
-        Object.entries(emotionSums).forEach(([emo, val]) => {
-          if (val > maxVal) { maxVal = val; maxEmo = emo; }
-        });
-
-        const intensity = Math.min(maxVal, 0.5);
-        particleMaterial.opacity = 0.6 + intensity * 0.2;
-      }
-
-      socket.on('globalMood', (data) => {
-        globalMoodData = data;
-        applyGlobalMood(data);
-      });
-
-      // Initial global mood load
-      if (db && firebaseReady) {
-        setTimeout(updateGlobalMood, 3000);
-      }
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    //  AR VIEWER (for ?workId=XXX on mobile)
-    // ══════════════════════════════════════════════════════════════
-    if (role === 'arViewer') {
-      document.getElementById('ar-viewer-ui').style.display = 'flex';
-      document.body.style.overflow = 'auto';
-      document.body.style.height = 'auto';
-
-      // 作品データを取得
-      async function loadWork() {
-        let work = null;
-        try {
-          const res = await fetch('/api/works/' + workId);
-          if (res.ok) work = await res.json();
-        } catch (e) { console.warn('Server API load failed:', e); }
-        if (!work && db && firebaseReady) {
-          try {
-            const doc = await db.collection(GALLERY_PATH).doc(workId).get();
-            if (doc.exists) work = { id: doc.id, ...doc.data() };
-          } catch (e) { console.warn('Firestore load failed:', e); }
-        }
-        return work;
-      }
-
-      // シェアページ初期化
-      async function initSharePage() {
-        const msgEl = document.getElementById('share-message');
-        msgEl.textContent = '読み込み中...';
-
-        const work = await loadWork();
-        if (!work) {
-          msgEl.textContent = '作品が見つかりませんでした';
-          return;
-        }
-        msgEl.textContent = '';
-
-        // サムネイル表示
-        const previewEl = document.getElementById('share-preview');
-        if (work.thumbnailUrl || work.displacementData) {
-          const img = document.createElement('img');
-          img.src = work.thumbnailUrl || work.displacementData;
-          img.style.maxWidth = '100%';
-          img.style.borderRadius = '12px';
-          previewEl.appendChild(img);
-        }
-
-        // 感情バー
-        if (work.effectValues) {
-          renderEmotionBar(
-            document.getElementById('share-emotion-bar'),
-            document.getElementById('share-emotion-labels'),
-            calcEmotionFromEffects(work.effectValues)
-          );
-        }
-
-        // Instagram共有ボタン
-        document.getElementById('share-instagram-btn').addEventListener('click', () => {
-          const imgUrl = work.thumbnailUrl || work.displacementData;
-          // Instagram Stories deep link (モバイル)
-          window.location.href = 'instagram-stories://share?background_image=' + encodeURIComponent(imgUrl);
-          // フォールバック: Web Share API
-          setTimeout(() => {
-            if (navigator.share) {
-              navigator.share({ title: 'Emotion Paint', url: location.href }).catch(() => { });
-            }
-          }, 2000);
-        });
-
-        // 画像保存ボタン
-        document.getElementById('share-download-btn').addEventListener('click', () => {
-          const a = document.createElement('a');
-          a.href = work.thumbnailUrl || work.displacementData;
-          a.download = 'emotion-paint-' + workId + '.png';
-          a.click();
-        });
-      }
-
-      initSharePage();
     }
   </script>
 </body>
