@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emotion-Paint システム設計・機材連携構成図（モダンモノトーン）</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+JP:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+    body {
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    @media print {
+      body { background: #ffffff !important; padding: 0 !important; }
+      .no-print { display: none !important; }
+      .slide-container {
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        padding: 24px !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-neutral-100 text-neutral-900 min-h-screen p-4 md:p-8 flex flex-col items-center justify-center">
+
+  <!-- Top Action Bar (No Print) -->
+  <div class="no-print w-full max-w-[1360px] flex items-center justify-between mb-3 px-2">
+    <div class="flex items-center gap-2 text-xs text-neutral-600">
+      <span class="inline-block w-2 h-2 rounded-full bg-neutral-900"></span>
+      <span>16:9 Presentation Slide / Monochrome Modern</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="window.print()" class="flex items-center gap-1.5 px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+        <span>PDF / 印刷として保存</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 16:9 Slide Canvas (Monochrome Modern) -->
+  <div class="slide-container w-full max-w-[1360px] bg-white border border-neutral-300 rounded-xl shadow-xl overflow-hidden flex flex-col p-6 md:p-8 relative">
+    
+    <!-- Header Section -->
+    <header class="flex flex-wrap items-end justify-between border-b-2 border-neutral-900 pb-4 mb-5 gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="px-2 py-0.5 rounded text-[11px] font-bold tracking-wider uppercase bg-neutral-900 text-white font-mono">SPEC-01</span>
+          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-neutral-100 text-neutral-700 border border-neutral-300">デジタル陶芸体験インスタレーション</span>
+          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-neutral-100 text-neutral-700 border border-neutral-300">会場システム構成仕様書</span>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-black tracking-tight text-neutral-950 flex items-center gap-2">
+          Emotion-Paint システム設計・機材連携構成図
+        </h1>
+        <p class="text-xs md:text-sm text-neutral-600 mt-1">
+          2台の端末によるリアルタイム同期とクラウド連携（基本5要素 ＆ 物理・論理ネットワーク連携仕様）
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3 text-xs text-neutral-600 bg-neutral-50 border border-neutral-200 px-3 py-1.5 rounded-lg">
+        <div>
+          <span class="text-neutral-400">ARCH: </span>
+          <strong class="text-neutral-900 font-mono">Cloud Run + WebSocket</strong>
+        </div>
+        <span class="text-neutral-300">|</span>
+        <div>
+          <span class="text-neutral-400">VERSION: </span>
+          <strong class="text-neutral-900 font-mono">2.0 (Direct Viewer)</strong>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content 2-Column Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 flex-1">
+      
+      <!-- LEFT COL: 基本5要素の整理 (5 Elements) -> lg:span-5 -->
+      <div class="lg:col-span-5 flex flex-col gap-2.5">
+        <div class="flex items-center justify-between pb-1 border-b border-neutral-200">
+          <h2 class="text-xs font-black tracking-widest text-neutral-900 uppercase flex items-center gap-1.5">
+            <span class="w-2 h-2 bg-neutral-900"></span>
+            1. システム基本5要素の整理
+          </h2>
+          <span class="text-[10px] text-neutral-500 font-mono">5 Core Elements</span>
+        </div>
+
+        <div class="space-y-2 flex-1 flex flex-col justify-between">
+          
+          <!-- 要素 1: 入力 (Input) -->
+          <div class="border border-neutral-200 rounded-lg p-2.5 bg-neutral-50/50 hover:bg-neutral-50 transition">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold font-mono bg-neutral-900 text-white">01</span>
+                <h3 class="text-xs font-bold text-neutral-900">入力 (Input)</h3>
+              </div>
+              <span class="text-[10px] text-neutral-500 font-mono">Touch & Stylus</span>
+            </div>
+            <ul class="text-[11px] text-neutral-700 space-y-0.5 pl-1 leading-relaxed">
+              <li>・<strong class="text-neutral-950 font-semibold">スタイラスペン / タッチ</strong>: 描画座標・筆圧ストローク</li>
+              <li>・<strong class="text-neutral-950 font-semibold">5つの感情パラメータ</strong>: たのしい/おどろき/せつない/こんらん/しげきてき</li>
+              <li>・壺の形状選択（vaseShape）、背景テーマ、作者署名サイン</li>
+            </ul>
+          </div>
+
+          <!-- 要素 2: 処理 (Processing) -->
+          <div class="border border-neutral-200 rounded-lg p-2.5 bg-neutral-50/50 hover:bg-neutral-50 transition">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold font-mono bg-neutral-900 text-white">02</span>
+                <h3 class="text-xs font-bold text-neutral-900">処理 (Processing)</h3>
+              </div>
+              <span class="text-[10px] text-neutral-500 font-mono">Client & Server</span>
+            </div>
+            <ul class="text-[11px] text-neutral-700 space-y-0.5 pl-1 leading-relaxed">
+              <li>・<strong class="text-neutral-950 font-semibold">手元タブレット</strong>: HTML5 Canvas 上のUVテクスチャリアルタイム展開</li>
+              <li>・<strong class="text-neutral-950 font-semibold">縦型モニター</strong>: Three.js による3D壺メッシュ・シェーダー描画</li>
+              <li>・<strong class="text-neutral-950 font-semibold">システム本体 (Cloud Run)</strong>: Socket.io による低遅延双方向中継</li>
+              <li>・<strong class="text-neutral-950 font-semibold">クラウド処理</strong>: 4方向画像キャプチャ合成 & 感情データ解析</li>
+            </ul>
+          </div>
+
+          <!-- 要素 3: 出力 (Output) -->
+          <div class="border border-neutral-200 rounded-lg p-2.5 bg-neutral-50/50 hover:bg-neutral-50 transition">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold font-mono bg-neutral-900 text-white">03</span>
+                <h3 class="text-xs font-bold text-neutral-900">出力 (Output)</h3>
+              </div>
+              <span class="text-[10px] text-neutral-500 font-mono">Visual & Cloud</span>
+            </div>
+            <ul class="text-[11px] text-neutral-700 space-y-0.5 pl-1 leading-relaxed">
+              <li>・<strong class="text-neutral-950 font-semibold">縦型モニター</strong>: 3D回転壺のリアルタイムペイント映像</li>
+              <li>・<strong class="text-neutral-950 font-semibold">手元タブレット</strong>: 描画UI、エフェクト反映、完了時手元QR表示</li>
+              <li>・<strong class="text-neutral-950 font-semibold">Instagram</strong>: Graph API 経由での4面カルーセル自動投稿</li>
+              <li>・<strong class="text-neutral-950 font-semibold">スマートフォン</strong>: 手元QRコード読取で公式Instagramを開き作品閲覧</li>
+            </ul>
+          </div>
+
+          <!-- 要素 4: ネットワーク (NW) -->
+          <div class="border border-neutral-200 rounded-lg p-2.5 bg-neutral-50/50 hover:bg-neutral-50 transition">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold font-mono bg-neutral-900 text-white">04</span>
+                <h3 class="text-xs font-bold text-neutral-900">ネットワーク (NW)</h3>
+              </div>
+              <span class="text-[10px] text-neutral-500 font-mono">LAN / WAN</span>
+            </div>
+            <ul class="text-[11px] text-neutral-700 space-y-0.5 pl-1 leading-relaxed">
+              <li>・<strong class="text-neutral-950 font-semibold">会場LAN</strong>: 会場用ルーター（電波干渉の少ない 5GHz 帯 Wi-Fi 推奨）</li>
+              <li>・<strong class="text-neutral-950 font-semibold">WebSocket (Socket.io)</strong>: 描画・感情データの即時ブロードキャスト</li>
+              <li>・<strong class="text-neutral-950 font-semibold">HTTPS REST API</strong>: Cloud Run / Firebase / Meta API 通信</li>
+            </ul>
+          </div>
+
+          <!-- 要素 5: 電源 (Power) -->
+          <div class="border border-neutral-200 rounded-lg p-2.5 bg-neutral-50/50 hover:bg-neutral-50 transition">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold font-mono bg-neutral-900 text-white">05</span>
+                <h3 class="text-xs font-bold text-neutral-900">電源 (Power)</h3>
+              </div>
+              <span class="text-[10px] text-neutral-500 font-mono">Continuous Supply</span>
+            </div>
+            <ul class="text-[11px] text-neutral-700 space-y-0.5 pl-1 leading-relaxed">
+              <li>・<strong class="text-neutral-950 font-semibold">商用 AC 100V</strong>: 縦型モニター、駆動用PC、Wi-Fiルーター（常時給電）</li>
+              <li>・<strong class="text-neutral-950 font-semibold">USB-PD 急速給電</strong>: 手元タブレット（体験中の電池切れ・減光防止）</li>
+              <li>・<strong class="text-neutral-950 font-semibold">無停電電源 (UPS)</strong>: 展示の安定稼働と瞬低保護（推奨）</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT COL: 機材の連携設計（構成図） -> lg:span-7 -->
+      <div class="lg:col-span-7 flex flex-col gap-2.5">
+        <div class="flex items-center justify-between pb-1 border-b border-neutral-200">
+          <h2 class="text-xs font-black tracking-widest text-neutral-900 uppercase flex items-center gap-1.5">
+            <span class="w-2 h-2 bg-neutral-900"></span>
+            2. 機材の連携設計（物理接続 & 論理通信 統合図）
+          </h2>
+          <span class="text-[10px] text-neutral-500 font-mono">Hardware & Topology Map</span>
+        </div>
+
+        <!-- Visual Architecture Canvas (Clean Monochrome Diagram) -->
+        <div class="border-2 border-neutral-900 rounded-xl p-3.5 bg-neutral-50 flex-1 flex flex-col justify-between relative">
+          
+          <!-- LEVEL 1: 店舗・展示会場（物理設備） -->
+          <div class="bg-white border border-neutral-300 rounded-lg p-3 shadow-xs">
+            <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-neutral-200">
+              <span class="text-xs font-bold text-neutral-900 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-neutral-900"></span>
+                【会場設備】 お客さんの体験空間（ローカル環境）
+              </span>
+              <span class="text-[9px] font-mono bg-neutral-100 text-neutral-700 px-1.5 py-0.5 rounded border border-neutral-200">Venue Wi-Fi: 5GHz</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              
+              <!-- Device 1: Tablet -->
+              <div class="border border-neutral-300 rounded-lg p-2.5 bg-white">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-bold text-neutral-900">📱 手元タブレット (iPad等)</span>
+                  <span class="text-[9px] font-mono px-1 py-0.2 bg-neutral-900 text-white rounded">Controller</span>
+                </div>
+                <div class="text-[11px] text-neutral-600 space-y-0.5">
+                  <p class="font-mono text-neutral-900 font-semibold">URL: /?role=controller</p>
+                  <p>・描画操作 / サイン / 完了時QR表示</p>
+                </div>
+                <div class="mt-2 pt-1.5 border-t border-neutral-100 flex items-center justify-between text-[10px]">
+                  <span class="text-neutral-700 font-medium">⚡ USB-PD (常時給電)</span>
+                  <span class="text-neutral-500 font-mono">Wi-Fi 5GHz</span>
+                </div>
+              </div>
+
+              <!-- Device 2: Vertical Monitor + PC -->
+              <div class="border border-neutral-300 rounded-lg p-2.5 bg-white">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-bold text-neutral-900">🖥️ 縦型モニター ＋ PC</span>
+                  <span class="text-[9px] font-mono px-1 py-0.2 bg-neutral-100 text-neutral-900 border border-neutral-300 rounded">Viewer</span>
+                </div>
+                <div class="text-[11px] text-neutral-600 space-y-0.5">
+                  <p class="font-mono text-neutral-900 font-semibold">URL: /?role=viewer</p>
+                  <p>・大迫力3D壺のリアルタイム投影</p>
+                </div>
+                <div class="mt-2 pt-1.5 border-t border-neutral-100 flex items-center justify-between text-[10px]">
+                  <span class="text-neutral-700 font-medium">⚡ AC 100V</span>
+                  <span class="text-neutral-500 font-mono">HDMI 接続 (PC→画面)</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- MIDDLE CONNECTOR: WebSocket Realtime Streaming Indicator -->
+          <div class="my-2 bg-neutral-900 text-white rounded-lg px-3 py-1.5 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+              <span class="font-mono font-semibold tracking-wide text-[11px]">WebSocket (Socket.io) リアルタイム双方向中継</span>
+            </div>
+            <span class="font-mono text-[10px] text-neutral-300">
+              ストローク(draw) / 感情値(emotion) / 壺形状(vaseShape)
+            </span>
+          </div>
+
+          <!-- LEVEL 2: クラウド基盤 & 外部サービス -->
+          <div class="bg-white border border-neutral-300 rounded-lg p-3 shadow-xs">
+            <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-neutral-200">
+              <span class="text-xs font-bold text-neutral-900 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-neutral-900"></span>
+                【クラウド基盤 ＆ 外部発信】 処理・長期保管・SNS
+              </span>
+              <span class="text-[9px] font-mono bg-neutral-100 text-neutral-700 px-1.5 py-0.5 rounded border border-neutral-200">GCP & Meta API</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              
+              <!-- Cloud 1: Cloud Run -->
+              <div class="border border-neutral-200 rounded p-2 bg-neutral-50/60">
+                <div class="text-[11px] font-bold text-neutral-900 mb-0.5">☁️ お店本体 (server.js)</div>
+                <p class="text-[10px] text-neutral-600 font-mono">Google Cloud Run</p>
+                <p class="text-[10px] text-neutral-500 mt-1">・Socket.io 双方向同期</p>
+                <p class="text-[10px] text-neutral-500">・自動リダイレクト制御</p>
+              </div>
+
+              <!-- Cloud 2: Firebase Storage -->
+              <div class="border border-neutral-200 rounded p-2 bg-neutral-50/60">
+                <div class="text-[11px] font-bold text-neutral-900 mb-0.5">📦 倉庫 (Firebase)</div>
+                <p class="text-[10px] text-neutral-600 font-mono">Cloud Storage</p>
+                <p class="text-[10px] text-neutral-500 mt-1">・4面写真・サインの保管</p>
+                <p class="text-[10px] text-neutral-500">・作品データの長期保存</p>
+              </div>
+
+              <!-- Cloud 3: Instagram & Phone -->
+              <div class="border border-neutral-200 rounded p-2 bg-neutral-50/60">
+                <div class="text-[11px] font-bold text-neutral-900 mb-0.5">📸 自動投稿 ＆ スマホ閲覧</div>
+                <p class="text-[10px] text-neutral-600 font-mono">Instagram Graph API</p>
+                <p class="text-[10px] text-neutral-500 mt-1">・4面カルーセル自動投稿</p>
+                <p class="text-[10px] text-neutral-500">・QR読取でInstagram閲覧</p>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Bottom Topology Legend -->
+          <div class="mt-2.5 pt-2 border-t border-neutral-200 flex flex-wrap items-center justify-between text-[10px] text-neutral-500">
+            <div class="flex items-center gap-3">
+              <span class="flex items-center gap-1 font-mono font-semibold text-neutral-800">
+                <span class="w-2.5 h-0.5 bg-neutral-900"></span> 物理: USB-PD / HDMI / LAN
+              </span>
+              <span class="flex items-center gap-1 font-mono font-semibold text-neutral-800">
+                <span class="w-2.5 h-0.5 bg-neutral-400"></span> 論理: WebSocket / HTTPS REST
+              </span>
+              <span class="flex items-center gap-1 font-mono font-semibold text-neutral-800">
+                <span>⚡</span> 電源: AC100V / 常時給電
+              </span>
+            </div>
+            <span class="font-mono text-neutral-400">Architecture Spec Sheet</span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Footer Note -->
+    <footer class="mt-4 pt-3 border-t border-neutral-200 flex items-center justify-between text-[11px] text-neutral-500">
+      <span>システム構成: 手元タブレット ⇄ 会場ルーター ⇄ 縦型モニター ⇄ Google Cloud Run ⇄ Firebase / Instagram</span>
+      <span class="font-mono font-semibold text-neutral-700">PAGE 1/1 (SINGLE SLIDE OVERVIEW)</span>
+    </footer>
+
+  </div>
+
+</body>
+</html>
