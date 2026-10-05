@@ -1,0 +1,15 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // ギャラリー配下の作品画像ファイル
+    match /artifacts/{appId}/public/data/gallery/{workId}/{allPaths=**} {
+      allow read: if true;                          // 作品画像の閲覧・ダウンロードは公開
+      allow write: if request.auth != null;         // 匿名認証済みの手元タブレット/縦型モニターのみアップロード可能
+    }
+    
+    // その他のパスは安全のためすべて拒絶
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

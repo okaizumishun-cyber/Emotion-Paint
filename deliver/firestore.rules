@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ギャラリーコレクション配下の作品ドキュメント
+    match /artifacts/{appId}/public/data/gallery/{workId} {
+      allow read: if true;                          // 作品閲覧・一覧取得は誰でも可能
+      allow create, update: if request.auth != null;// 匿名認証済みの手元タブレット/縦型モニターのみ書き込み可能
+      allow delete: if false;                       // 外部からの削除は禁止
+    }
+    
+    // その他のパスは安全のためすべて拒絶
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
