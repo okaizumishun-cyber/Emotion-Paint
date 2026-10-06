@@ -348,10 +348,15 @@
   - 展示会場の視認性を安定させるため、ダークモード切り替えUI（`#ctrl-theme-toggle`, `#theme-toggle`）および `theme` イベントを撤廃。
   - 背景色（`0xf0f0f0`）、環境光基本値（`ambientBase: 0.6`, `ambBoost: 0.4`）、点光源倍率（`2.5`）をライトモード専用値に固定。
 
-### ④ Cloud Run スケーリング仕様
-- **シングルインスタンス運用（min: 1, max: 1）**:
+### ④ Cloud Run スケーリング仕様・予備環境（DR）運用方針
+- **本番環境（sotuten-32fea）のシングルインスタンス運用（min: 1, max: 1）**:
   - メモリ上のセッション・トークン・作品キャッシュの整合性を担保し、同時接続時の同期ズレやインスタンス間不整合を完全に防止。
   - セッションアフィニティ有効化（`sessionAffinity: 'true'`）。
+  - 常時ウォーム待機（min: 1）によりコールドスタート遅延を排除し、展示会場でのスムーズな体験を保証。
+- **予備環境（gemini-art-project）のスタンバイ方針（min: 0, max: 1）**:
+  - 本番サービス障害やGoogle Cloud障害に備えたスタンバイ環境として構成。
+  - 通常時は `--min-instances 0` に設定し、コストを完全にゼロ（$0）に抑制したコールドスタンバイ状態を維持。
+  - 緊急時には最小限のコマンド操作で即座にウォーム起動（min: 1）および環境変数設定を行い、本番同等の待受状態へ切り替え可能。
 
 ### ⑤ Instagram トークン運用・更新手順仕様
 - **トークン種別**: 長期アクセストークン（有効期限: 60日間）
@@ -401,3 +406,94 @@
   - URL内の `workId` がリクエストパラメータの `:id` と一致しない場合、または外部ドメイン・不正パスの画像URLが含まれる場合は自動投稿を即座にスキップ・遮断。
 - **同一接続元IPレート制限（スパム投稿・API消費防止）**:
   - 同一クライアントIPからの短時間の連続投稿（30秒以内）をインメモリで検知・制限。展示会場における通常体験サイクル（1名あたり数分）を阻害することなく、スクリプト等による連打やMeta API投稿枠（100件/24h）の浪費を防止。
+
+### ⑨ 予備環境（gemini-art-project）緊急時切り替え・運用マニュアル（DR手順）
+
+本番サービス（`sotuten-32fea`）に障害が発生した際、予備サービス（`gemini-art-project`）へ速やかに切り替えて展示を継続するための手順書です。
+
+#### 1. システム情報一覧
+| 項目 | 本番環境（プライマリ） | 予備環境（スタンバイ） |
+| :--- | :--- | :--- |
+| **GCP プロジェクトID** | `sotuten-32fea` | `gemini-art-project` |
+| **リージョン** | `asia-northeast1` (東京) | `asia-northeast1` (東京) |
+| **サービス名** | `emotion-paint` | `emotion-paint` |
+| **サービスURL** | `https://emotion-paint-599225549831.asia-northeast1.run.app` | `https://emotion-paint-190738502658.asia-northeast1.run.app` |
+| **通常時 min-instances**| `1` (ウォーム起動維持) | `0` (コスト0円待機) |
+| **通常時 max-instances**| `1` | `1` |
+| **通常時 Instagram 設定**| 設定済み（正常稼働） | 未設定（安全待機） |
+
+#### 2. 切り替え判断基準
+以下のいずれかが発生し、数分以内の自然復旧が見込めない場合に切り替えを実施します：
+- 本番URL（`https://emotion-paint-599225549831.asia-northeast1.run.app`）へアクセスしても 502 / 503 / 504 エラーまたはタイムアウトが継続する。
+- 本番サービスの Cloud Run コンテナがクラッシュを繰り返し、再起動ループに陥っている。
+- GCP プロジェクト `sotuten-32fea` のリソース障害やアクセス制限等により本番サービスが停止した。
+
+#### 3. 緊急切り替え手順（フェイルオーバー）
+
+##### 【手順 1】予備サービスへ Instagram 設定を反映（環境変数投入）
+予備サービスに本番と同じ Instagram アクセストークンおよびアカウントIDを設定します。
+```bash
+gcloud run services update emotion-paint \
+  --region asia-northeast1 \
+  --project gemini-art-project \
+  --set-env-vars "INSTAGRAM_ACCESS_TOKEN={CURRENT_TOKEN},INSTAGRAM_ACCOUNT_ID=17841475777772893"
+```
+※ `{CURRENT_TOKEN}` には有効な長期アクセストークン（60日）を指定してください。
+
+##### 【手順 2】予備サービスのインスタンス数を引き上げ（ウォーム起動）
+展示体験中のコールドスタートによる描画遅延を防ぐため、最小インスタンス数を `1` に引き上げます。
+```bash
+gcloud run services update emotion-paint \
+  --region asia-northeast1 \
+  --project gemini-art-project \
+  --min-instances 1
+```
+
+##### 【手順 3】予備サービスの疎通確認（ヘルスチェック）
+予備サービスのトークン状態およびAPIが正常稼働しているか確認します。
+```bash
+curl -s https://emotion-paint-190738502658.asia-northeast1.run.app/api/instagram/token-status
+```
+**期待される正常レスポンス**:
+```json
+{"valid":true,"remainingDays":59}
+```
+※ `valid: true` が返ることを確認してください。
+
+##### 【手順 4】会場端末のアクセスURL切り替え
+展示会場の端末（PC・タブレット）のブラウザで開いているURLを、予備サービスのURLへ変更（またはブックマーク／ショートカットから開き直し）します。
+- **大画面・縦型モニター（表示・撮影端末 / PC Chrome 等）**:
+  - `https://emotion-paint-190738502658.asia-northeast1.run.app/?role=viewer`
+- **手元操作タブレット（描画・サイン・体験端末 / iPad Safari 等）**:
+  - `https://emotion-paint-190738502658.asia-northeast1.run.app/?role=controller`
+
+端末側でWebSocket接続が確立され、ペアリングが完了すれば切り替え完了です。
+
+---
+
+#### 4. 本番復旧後の切り戻し手順（フェイルバック）
+
+本番サービス（`sotuten-32fea`）の復旧が確認された後、以下の手順で通常運用状態へ戻します。
+
+##### 【手順 1】会場端末のURLを本番へ戻す
+- **縦型モニター**: `https://emotion-paint-599225549831.asia-northeast1.run.app/?role=viewer`
+- **手元タブレット**: `https://emotion-paint-599225549831.asia-northeast1.run.app/?role=controller`
+
+##### 【手順 2】予備サービスの最小インスタンス数を 0 へ戻す（コスト抑制）
+予備サービスが起動し続けて無駄な課金が発生するのを防ぐため、最小インスタンス数を `0` に戻します。
+```bash
+gcloud run services update emotion-paint \
+  --region asia-northeast1 \
+  --project gemini-art-project \
+  --min-instances 0
+```
+
+##### 【手順 3】（任意）予備サービスの環境変数をクリア
+セキュリティ上、予備サービスの待機中にトークンを保持させない場合は環境変数をクリアします（緊急時の迅速性を優先してトークンを残したまま min-instances 0 にしておく運用でも可）。
+```bash
+gcloud run services update emotion-paint \
+  --region asia-northeast1 \
+  --project gemini-art-project \
+  --remove-env-vars INSTAGRAM_ACCESS_TOKEN,INSTAGRAM_ACCOUNT_ID
+```
+
