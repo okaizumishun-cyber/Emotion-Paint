@@ -410,15 +410,20 @@ app.get('/api/instagram/token-status', async (req, res) => {
 
 app.post('/api/instagram/exchange-token', async (req, res) => {
   const { shortLivedToken, appId, appSecret } = req.body;
-  if (!shortLivedToken || !appId || !appSecret) {
+  const cleanToken = (shortLivedToken || '').trim();
+  const cleanAppId = (appId || '').trim();
+  const cleanSecret = (appSecret || '').trim();
+
+  if (!cleanToken || !cleanAppId || !cleanSecret) {
     return res.status(400).json({ error: 'shortLivedToken, appId, appSecret are required' });
   }
   try {
-    const url = `https://graph.facebook.com/v18.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${shortLivedToken}`;
+    const url = `https://graph.facebook.com/v18.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${cleanAppId}&client_secret=${cleanSecret}&fb_exchange_token=${cleanToken}`;
     const r = await fetch(url);
     const data = await r.json();
     if (data.error) {
-      return res.status(400).json({ error: data.error.message });
+      console.error('Meta Exchange Token Error:', JSON.stringify(data.error));
+      return res.status(400).json({ error: data.error.message, code: data.error.code, subcode: data.error.error_subcode });
     }
     INSTAGRAM_ACCESS_TOKEN = data.access_token;
     console.log('Instagram token updated (long-lived, expires in ~60 days)');
@@ -429,6 +434,7 @@ app.post('/api/instagram/exchange-token', async (req, res) => {
       gcloudCommand: `gcloud run services update emotion-paint --region asia-northeast1 --set-env-vars "INSTAGRAM_ACCESS_TOKEN=${data.access_token},INSTAGRAM_ACCOUNT_ID=${INSTAGRAM_ACCOUNT_ID}"`
     });
   } catch (e) {
+    console.error('Exchange token exception:', e);
     res.status(500).json({ error: e.message });
   }
 });
