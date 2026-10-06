@@ -5,6 +5,9 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
+// Trust reverse proxy (Cloud Run / Google Load Balancer) for secure client IP detection
+app.set('trust proxy', true);
+
 const server = http.createServer(app);
 const io = new Server(server);
 
@@ -74,7 +77,7 @@ const works = new Map();
 
 // Rate limiter for Instagram auto-posts (IP-based cooldown)
 const postCooldownByIp = new Map();
-const POST_COOLDOWN_MS = 30 * 1000; // 30秒のクールダウン
+const POST_COOLDOWN_MS = (parseInt(process.env.POST_COOLDOWN_SECONDS, 10) || 20) * 1000; // デフォルト20秒（環境変数で調整可）
 
 // Validate Firebase Storage URL (sotuten-32fea)
 function isValidStorageUrl(urlString, expectedWorkId) {
@@ -275,7 +278,8 @@ app.post('/api/works/:id', async (req, res) => {
   }
 
   // クライアントIPのレート制限チェック（同一IPからの短時間連続投稿防止）
-  const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || 'unknown';
+  // trust proxy 有効化により、Cloud Run のリバースプロキシが付与した正規のクライアントIPが req.ip に格納される
+  const clientIp = req.ip || req.socket?.remoteAddress || 'unknown';
   const now = Date.now();
   const lastPostTime = postCooldownByIp.get(clientIp) || 0;
   if (now - lastPostTime < POST_COOLDOWN_MS) {
