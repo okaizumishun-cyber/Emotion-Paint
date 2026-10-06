@@ -115,7 +115,7 @@
        ▼                                         ▲
 【システム本体: server.js】                               │ スマホで手元の
        │                                         │ QRをスキャン
-       ▼ サーバ内部での自己呼び出し（ループバック通信） (POST /api/instagram/carousel) │
+       ▼ サーバー内部関数で非同期直接呼び出し (postCarouselToInstagram) │
 【Instagram Graph API】                           │
        │                                         │
        ▼ 公式Instagramアカウント (@atelier_kanna1212) に投稿！  │
@@ -140,8 +140,9 @@
 | メソッド | パス | 呼び出し元 | 役割 |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/` | ブラウザ全般 | パラメータなしアクセスを `/?role=viewer` に自動リダイレクト |
-| `POST` | `/api/works/:id` | 縦型モニター | 作品データ（Firebase画像URL・effectValues・サインURL）の送信・一時保存 |
-| `POST` | `/api/instagram/carousel` | サーバ内部での自己呼び出し（ループバック通信） | `POST /api/works/:id` 受信時にサーバ内部での自己呼び出し（ループバック通信）を行い、Instagramへ5枚（壺4面＋サイン）カルーセル投稿 |
+| `POST` | `/api/works/:id` | 縦型モニター | 作品データの一時保存。画像URLの厳格検証およびレート制限を通過後、内部関数よりInstagramへ5枚カルーセル自動投稿 |
+| `GET` | `/api/instagram/token-status` | 管理者 / ヘルスチェック | Instagramトークンの有効性（`valid`）および残り有効日数（`remainingDays`）のみを安全に返却 |
+| *（廃止）* | `/api/instagram/carousel`, `/api/instagram/post` | - | **外部HTTP受け口を完全廃止**。悪用防止のためサーバー内部関数からの直接呼出しに移行済み |
 
 ---
 
@@ -347,17 +348,10 @@
   - 展示会場の視認性を安定させるため、ダークモード切り替えUI（`#ctrl-theme-toggle`, `#theme-toggle`）および `theme` イベントを撤廃。
   - 背景色（`0xf0f0f0`）、環境光基本値（`ambientBase: 0.6`, `ambBoost: 0.4`）、点光源倍率（`2.5`）をライトモード専用値に固定。
 
-### ④ Cloud Run スケーリングおよび本番・予備サービス運用仕様
-- **本番サービス（`sotuten-32fea` / `emotion-paint`）**:
-  - **シングルインスタンス常時稼働（min: 1, max: 1）**:
-    - メモリ上のセッション・トークン・作品キャッシュの整合性を担保し、同時接続時の同期ズレやインスタンス間不整合を完全に防止。
-    - WebSocket（Socket.io）の接続維持と切断・再接続のオーバーヘッドをゼロにするため、常時1インスタンスをウォーム待機。
-    - セッションアフィニティ有効化（`sessionAffinity: 'true'`）。
-- **予備サービス（`gemini-art-project` / `emotion-paint`）のコールドスタンバイ運用方針**:
-  - **最小インスタンス数ゼロ（min: 0, max: 20）**:
-    - **待機コストゼロ化**: アクセスがない間はコンテナインスタンスが起動しないため、二重の常時起動アイドル課金を完全に防止（待機維持費 $0）。
-    - **接続・運用の単一性**: 展示会場（タブレット・縦型モニター）からの接続先を本番URL（`sotuten-32fea`）に一本化し、誤接続や二重投稿のリスクを排除。
-    - **即時切り替え可能性（DR / ディザスタリカバリ）**: 最新のコンテナイメージおよびセキュリティ修正が本番と同一状態でデプロイ済みとなっており、本番サービスに万が一の障害が発生した際でも、クライアントの接続先URLを切り替えるだけでリクエストに応じて自動起動し、即座にサービス提供を継続可能。
+### ④ Cloud Run スケーリング仕様
+- **シングルインスタンス運用（min: 1, max: 1）**:
+  - メモリ上のセッション・トークン・作品キャッシュの整合性を担保し、同時接続時の同期ズレやインスタンス間不整合を完全に防止。
+  - セッションアフィニティ有効化（`sessionAffinity: 'true'`）。
 
 ### ⑤ Instagram トークン運用・更新手順仕様
 - **トークン種別**: 長期アクセストークン（有効期限: 60日間）
@@ -397,3 +391,13 @@
     - `vaseA`: `camera.position.set(0, 2.05, 7.84); camera.lookAt(0, 1.748, 0);`（上下余白: 約 7〜9px）
     - `vaseB`: `camera.position.set(0, 2.06, 8.26); camera.lookAt(0, 1.740, 0);`（上下余白: 約 6px）
   - これにより、壺の口（TOP）から底（END）までが上下・左右ともに約 5〜10px の極小余白で、壺の輪郭が美しく最大サイズで正方形に収まり、上下切れも過剰な余白も完全に防止。
+
+### ⑧ Instagram 自動投稿セキュリティ・URL検証・レート制限仕様
+- **外部HTTP受け口の完全廃止（内部関数化）**:
+  - 不正な第三者による外部からの直接投稿呼出しやループバック通信の悪用を防ぐため、`POST /api/instagram/carousel` および `POST /api/instagram/post` のHTTPルートを全廃。
+  - `POST /api/works/:id` の正規保存フロー完了後、サーバー内部の非同期関数（`postCarouselToInstagram` / `postSingleToInstagram`）から直接 Meta Graph API を呼び出す設計に移行。
+- **Firebase Storage 画像URLの厳格検証（SSRF・外部画像混入防止）**:
+  - 投稿対象の `imageUrls`、`signatureUrl`、`thumbnailUrl` が、本プロジェクト指定の Firebase Storage（`sotuten-32fea.firebasestorage.app` / `sotuten-32fea.appspot.com`）の `/artifacts/{appId}/public/data/gallery/{workId}/` 配下の正規URLであることをサーバー側で厳格にチェック。
+  - URL内の `workId` がリクエストパラメータの `:id` と一致しない場合、または外部ドメイン・不正パスの画像URLが含まれる場合は自動投稿を即座にスキップ・遮断。
+- **同一接続元IPレート制限（スパム投稿・API消費防止）**:
+  - 同一クライアントIPからの短時間の連続投稿（30秒以内）をインメモリで検知・制限。展示会場における通常体験サイクル（1名あたり数分）を阻害することなく、スクリプト等による連打やMeta API投稿枠（100件/24h）の浪費を防止。
