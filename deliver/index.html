@@ -4,7 +4,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Emotion Paint - Floating Icons</title>
+  <title>Emotion-Paint</title>
+  <script>
+    (function () {
+      const p = new URLSearchParams(window.location.search);
+      const r = p.get('screen') || p.get('role');
+      document.title = (r === 'controller' || r === 'paint')
+        ? 'Emotion-Paint (操作画面)'
+        : 'Emotion-Paint (展示スクリーン)';
+    })();
+  </script>
   <link
     href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap"
     rel="stylesheet">
@@ -1098,6 +1107,9 @@
     if (!params.get('screen') && !params.get('role')) {
       history.replaceState(null, '', '?role=viewer');
     }
+    document.title = (role === 'controller' || role === 'paint')
+      ? 'Emotion-Paint (操作画面)'
+      : 'Emotion-Paint (展示スクリーン)';
 
     // Robust Socket.io with auto-reconnect
     let socket;
