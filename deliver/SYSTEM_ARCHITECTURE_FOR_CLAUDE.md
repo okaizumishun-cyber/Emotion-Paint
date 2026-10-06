@@ -404,8 +404,8 @@
 - **Firebase Storage 画像URLの厳格検証（SSRF・外部画像混入防止）**:
   - 投稿対象の `imageUrls`、`signatureUrl`、`thumbnailUrl` が、本プロジェクト指定の Firebase Storage（`sotuten-32fea.firebasestorage.app` / `sotuten-32fea.appspot.com`）の `/artifacts/{appId}/public/data/gallery/{workId}/` 配下の正規URLであることをサーバー側で厳格にチェック。
   - URL内の `workId` がリクエストパラメータの `:id` と一致しない場合、または外部ドメイン・不正パスの画像URLが含まれる場合は自動投稿を即座にスキップ・遮断。
-- **リバースプロキシ対応（`trust proxy`）とIPレート制限（スパム投稿・API消費防止）**:
-  - `X-Forwarded-For` ヘッダーはクライアント側で任意に偽装可能なため、Express で `app.set('trust proxy', true)` を設定し、Cloud Run のリバースプロキシが付与した信頼できる実接続元IP（`req.ip`）を使用して判定。
+- **リバースプロキシ対応（`trust proxy: 1`）とIPレート制限（スパム投稿・API消費防止）**:
+  - `X-Forwarded-For` ヘッダーはクライアント側で任意に偽装可能なため、Express で `app.set('trust proxy', 1)` を設定（Cloud Run の前段プロキシは1段のため `1` を指定）。クライアントによる偽装ヘッダーを無視し、Cloud Run が付与した信頼できる正規の実接続元IP（`req.ip`）を使用して判定。
   - 同一クライアントIPからの短時間の連続投稿（デフォルト20秒クールダウン、環境変数 `POST_COOLDOWN_SECONDS` で変更可能）をインメモリで制限し、Meta API投稿枠（100件/24h）の浪費を防止。
 - **展示会場運用およびリハーサル時の留意点（連続テスト時の挙動）**:
   - 会場の端末は同一ルーター／同一接続元IPから送信されるため、前の作品保存からクールダウン時間（20秒）以内に次の作品を完了させると、Instagram投稿はサイレントにスキップされます（画面表示やFirestore保存自体は正常完了）。

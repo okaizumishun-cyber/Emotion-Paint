@@ -5,8 +5,8 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
-// Trust reverse proxy (Cloud Run / Google Load Balancer) for secure client IP detection
-app.set('trust proxy', true);
+// Trust Cloud Run 1-hop reverse proxy to prevent X-Forwarded-For spoofing and get actual client IP
+app.set('trust proxy', 1);
 
 const server = http.createServer(app);
 const io = new Server(server);
