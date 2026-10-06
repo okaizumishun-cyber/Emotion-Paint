@@ -3035,15 +3035,37 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
               mat.emissiveIntensity = 1;
             });
 
-            // 焼成完了後に4方向を明示的にキャプチャ
+            // 焼成完了後に4方向を正方形（1080x1080px）で明示的にキャプチャ
+            // Instagramカルーセル仕様（アスペクト比 1:1 統一）に適合させるため中央クロップを実施
+            const cropCanvas = document.createElement('canvas');
+            const CROP_DIM = 1080;
+            cropCanvas.width = CROP_DIM;
+            cropCanvas.height = CROP_DIM;
+            const cropCtx = cropCanvas.getContext('2d');
+
+            const srcW = renderer.domElement.width;
+            const srcH = renderer.domElement.height;
+            const cropSize = Math.min(srcW, srcH);
+            const cropX = (srcW - cropSize) / 2;
+            const cropY = (srcH - cropSize) / 2;
+
             const savedRotation = vase.rotation.y;
             for (let i = 0; i < captureAngles.length; i++) {
               vase.rotation.y = captureAngles[i];
               renderer.setRenderTarget(null);
               renderer.render(scene, camera);
-              const imageData = renderer.domElement.toDataURL('image/jpeg', 0.9);
+
+              // 描画結果の中央正方形領域を1080x1080キャンバスへ転送
+              cropCtx.clearRect(0, 0, CROP_DIM, CROP_DIM);
+              cropCtx.drawImage(
+                renderer.domElement,
+                cropX, cropY, cropSize, cropSize,
+                0, 0, CROP_DIM, CROP_DIM
+              );
+
+              const imageData = cropCanvas.toDataURL('image/jpeg', 0.9);
               capturedImages.push(imageData);
-              console.log(`Captured image ${i + 1}/4 at angle ${captureAngles[i]}`);
+              console.log(`Captured square image ${i + 1}/4 at angle ${captureAngles[i]} (1080x1080)`);
             }
             vase.rotation.y = savedRotation;
 
