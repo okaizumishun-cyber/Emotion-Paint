@@ -60,7 +60,7 @@ app.use(express.json({ limit: '50mb' }));
 
 // Redirect root URL without parameters to ?role=viewer
 app.get('/', (req, res, next) => {
-  if (!req.query.role && !req.query.screen && !req.query.workId) {
+  if (!req.query.role && !req.query.screen) {
     return res.redirect('/?role=viewer');
   }
   next();
@@ -136,53 +136,6 @@ app.post('/api/works/:id', async (req, res) => {
   } else if (INSTAGRAM_ACCESS_TOKEN && INSTAGRAM_ACCOUNT_ID) {
     console.log('⏭️ Skipping Instagram post (no public image URLs, waiting for viewer upload)');
   }
-});
-
-// Get a work
-app.get('/api/works/:id', (req, res) => {
-  const id = req.params.id;
-  const work = works.get(id);
-  if (!work) return res.status(404).json({ error: 'Not found' });
-  res.json(work);
-});
-
-// ══════════════════════════════════════
-//  Image Upload API (replaces Firebase Storage to avoid CORS)
-// ══════════════════════════════════════
-const uploadsDir = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-
-app.post('/api/upload', (req, res) => {
-  const { workId, images, displacement } = req.body;
-  if (!workId || !images || !Array.isArray(images)) {
-    return res.status(400).json({ error: 'workId and images[] required' });
-  }
-
-  const workDir = path.join(uploadsDir, workId);
-  if (!fs.existsSync(workDir)) fs.mkdirSync(workDir, { recursive: true });
-
-  const imageUrls = images.map((base64Data, index) => {
-    const matches = base64Data.match(/^data:image\/(\w+);base64,(.+)$/);
-    if (!matches) return null;
-    const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
-    const buffer = Buffer.from(matches[2], 'base64');
-    const filename = `view_${index}.${ext}`;
-    fs.writeFileSync(path.join(workDir, filename), buffer);
-    return `/uploads/${workId}/${filename}`;
-  }).filter(Boolean);
-
-  let displacementUrl = null;
-  if (displacement) {
-    const matches = displacement.match(/^data:image\/(\w+);base64,(.+)$/);
-    if (matches) {
-      const buffer = Buffer.from(matches[2], 'base64');
-      fs.writeFileSync(path.join(workDir, 'displacement.png'), buffer);
-      displacementUrl = `/uploads/${workId}/displacement.png`;
-    }
-  }
-
-  console.log(`Uploaded ${imageUrls.length} images for ${workId}`);
-  res.json({ imageUrls, displacementUrl });
 });
 
 // ══════════════════════════════════════
@@ -401,117 +354,6 @@ app.get('/api/instagram/token-status', async (req, res) => {
   } catch (e) {
     res.json({ valid: false, error: e.message });
   }
-});
-
-app.post('/api/instagram/exchange-token', async (req, res) => {
-  const { shortLivedToken, appId, appSecret } = req.body;
-  if (!shortLivedToken || !appId || !appSecret) {
-    return res.status(400).json({ error: 'shortLivedToken, appId, appSecret are required' });
-  }
-  try {
-    const url = `https://graph.facebook.com/v18.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${shortLivedToken}`;
-    const r = await fetch(url);
-    const data = await r.json();
-    if (data.error) {
-      return res.status(400).json({ error: data.error.message });
-    }
-    INSTAGRAM_ACCESS_TOKEN = data.access_token;
-    console.log('Instagram token updated (long-lived, expires in ~60 days)');
-    res.json({
-      success: true,
-      token: data.access_token,
-      expiresIn: data.expires_in,
-      gcloudCommand: `gcloud run services update emotion-paint --region asia-northeast1 --set-env-vars "INSTAGRAM_ACCESS_TOKEN=${data.access_token},INSTAGRAM_ACCOUNT_ID=${INSTAGRAM_ACCOUNT_ID}"`
-    });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-app.get('/admin/token', (req, res) => {
-  res.send(`<!DOCTYPE html>
-<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Instagram Token Manager</title>
-<style>
-  body{font-family:sans-serif;max-width:600px;margin:40px auto;padding:0 20px;background:#f5f5f5}
-  h1{color:#333;font-size:1.4em}
-  .card{background:#fff;border-radius:8px;padding:20px;margin:16px 0;box-shadow:0 1px 3px rgba(0,0,0,.1)}
-  label{display:block;margin:8px 0 4px;font-weight:bold;font-size:.9em}
-  input{width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;font-size:.9em}
-  button{padding:10px 20px;border:none;border-radius:4px;cursor:pointer;font-size:.9em;margin:8px 4px 0 0}
-  .btn-blue{background:#1877f2;color:#fff}
-  .btn-green{background:#28a745;color:#fff}
-  #status,#result{margin-top:12px;padding:12px;border-radius:4px;font-size:.85em;white-space:pre-wrap;word-break:break-all}
-  .ok{background:#d4edda;color:#155724}
-  .err{background:#f8d7da;color:#721c24}
-  .info{background:#d1ecf1;color:#0c5460}
-  a{color:#1877f2}
-</style></head><body>
-<h1>Instagram Token Manager</h1>
-<div class="card">
-  <h3>Step 1: Token Status</h3>
-  <button class="btn-blue" onclick="checkStatus()">Check Current Token</button>
-  <div id="status"></div>
-</div>
-<div class="card">
-  <h3>Step 2: Get Short-Lived Token</h3>
-  <p><a href="https://developers.facebook.com/tools/explorer/" target="_blank">Graph API Explorer</a> を開く</p>
-  <ol style="font-size:.85em;line-height:1.6">
-    <li>Right dropdown: select your app</li>
-    <li>User or Page: Page Access Token for <b>アトリエ＿かんな</b></li>
-    <li>Add permissions: <code>instagram_basic</code>, <code>instagram_content_publish</code>, <code>pages_read_engagement</code>, <code>pages_show_list</code></li>
-    <li>Click <b>Generate Access Token</b></li>
-  </ol>
-</div>
-<div class="card">
-  <h3>Step 3: Exchange for Long-Lived Token (60 days)</h3>
-  <label>Short-Lived Token:</label>
-  <input id="token" placeholder="EAAb...">
-  <label>App ID:</label>
-  <input id="appId" placeholder="123456789012345">
-  <label>App Secret:</label>
-  <input id="appSecret" type="password" placeholder="abc123...">
-  <button class="btn-green" onclick="exchangeToken()">Exchange Token</button>
-  <div id="result"></div>
-</div>
-<script>
-async function checkStatus(){
-  const el=document.getElementById('status');
-  el.className='info';el.textContent='Checking...';
-  try{
-    const r=await fetch('/api/instagram/token-status');
-    const d=await r.json();
-    if(d.valid){
-      el.className='ok';
-      el.textContent='Valid!\\nPage: '+d.name+'\\nExpires: '+d.expiresAt+'\\nRemaining: '+d.remainingDays+' days';
-    }else{
-      el.className='err';
-      el.textContent='Invalid: '+d.error;
-    }
-  }catch(e){el.className='err';el.textContent='Error: '+e.message}
-}
-async function exchangeToken(){
-  const el=document.getElementById('result');
-  const token=document.getElementById('token').value;
-  const appId=document.getElementById('appId').value;
-  const appSecret=document.getElementById('appSecret').value;
-  if(!token||!appId||!appSecret){el.className='err';el.textContent='All fields required';return}
-  el.className='info';el.textContent='Exchanging...';
-  try{
-    const r=await fetch('/api/instagram/exchange-token',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({shortLivedToken:token,appId,appSecret})
-    });
-    const d=await r.json();
-    if(d.success){
-      el.className='ok';
-      el.textContent='Success! Token updated (server memory).\\n\\nExpires in: '+Math.floor(d.expiresIn/86400)+' days\\n\\nTo persist on Cloud Run, run:\\n'+d.gcloudCommand;
-    }else{
-      el.className='err';el.textContent='Error: '+d.error;
-    }
-  }catch(e){el.className='err';el.textContent='Error: '+e.message}
-}
-</script></body></html>`);
 });
 
 io.on('connection', (socket) => {

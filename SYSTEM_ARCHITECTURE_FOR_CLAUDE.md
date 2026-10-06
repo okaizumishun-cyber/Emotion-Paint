@@ -115,7 +115,7 @@
        ▼                                         ▲
 【システム本体: server.js】                               │ スマホで手元の
        │                                         │ QRをスキャン
-       ▼ サーバー内部で非同期呼び出し (POST /api/instagram/carousel) │
+       ▼ サーバ内部での自己呼び出し（ループバック通信） (POST /api/instagram/carousel) │
 【Instagram Graph API】                           │
        │                                         │
        ▼ 公式Instagramアカウント (@atelier_kanna1212) に投稿！  │
@@ -132,16 +132,16 @@
 | :--- | :--- | :--- | :--- |
 | `draw` | タブレット | 縦型モニター | `{ dataURL: 'data:image/png;base64,...', mode, vaseShape }`<br>【ペン系15種】手元Canvasで描画されたUVテクスチャ画像全体（PNG DataURL） |
 | `emotion` | タブレット | 縦型モニター | `{ melt: 0.8, wobble: 0.5, badtv: 0.0, ... }`<br>【エフェクト系10種】各エフェクトスライダーの強度パラメータ（0.0〜1.0）の軽量JSON |
-| `vaseShape` | タブレット | 縦型モニター | `vaseShape` 壺の形状識別子 |
-| `save` | タブレット | 縦型モニター | `{ ...saveData, signatureData: 'data:image/jpeg;base64,...' }`<br>キャプチャ開始トリガー ＋ サイン画像データ |
+| `vaseShape` | タブレット | 縦型モニター | `vaseShape`（`'vaseA'` または `'vaseB'`） 壺の形状識別子 |
+| `save` | タブレット | 縦型モニター | `{ ...saveData, vaseShape: 'vaseA' | 'vaseB', signatureData: 'data:image/png;base64,...' }`<br>キャプチャ開始トリガー ＋ サイン画像データ（PNG） |
 | `saveComplete` | 縦型モニター | タブレット | `{ workId, thumbnailUrl }`<br>保存完了通知（これを受信したタブレットがQRコードを表示） |
 
 ### ② REST API エンドポイント (HTTP)
 | メソッド | パス | 呼び出し元 | 役割 |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/` | ブラウザ全般 | パラメータなしアクセスを `/?role=viewer` に自動リダイレクト |
-| `POST` | `/api/works/:id` | 縦型モニター | 作品データ（Firebase画像URL・感情値・サインURL）の送信・一時保存 |
-| `POST` | `/api/instagram/carousel` | サーバー本体内部 | `POST /api/works/:id` 受信時にサーバー自身が内部呼出しし、Instagramへ4面カルーセル投稿 |
+| `POST` | `/api/works/:id` | 縦型モニター | 作品データ（Firebase画像URL・effectValues・サインURL）の送信・一時保存 |
+| `POST` | `/api/instagram/carousel` | サーバ内部での自己呼び出し（ループバック通信） | `POST /api/works/:id` 受信時にサーバ内部での自己呼び出し（ループバック通信）を行い、Instagramへ5枚（壺4面＋サイン）カルーセル投稿 |
 
 ---
 
@@ -335,7 +335,7 @@
 - **新規作成（create）**: `allow create: if request.auth != null && request.resource.contentType.matches('image/(jpeg|png)') && request.resource.size < 5 * 1024 * 1024;`
   - 匿名認証済みクライアントに限定。
   - MIMEタイプを `image/jpeg` および `image/png` に制限（実行可能ファイル等の不正アップロード防止）。
-  - アップロードサイズを 5MB 未満に厳格制限（実測値: JPEG 200〜800KB、サイン 50〜150KB、displacement 50〜300KB に対し十分かつ安全な上限値）。
+  - アップロードサイズを 5MB 未満に厳格制限（実測値: 4方向 183〜196KB、サイン 12.8KB、displacement 568.5KB に対し十分かつ安全な上限値）。
 - **更新・削除（update, delete）**: `allow update, delete: if false;`
   - 保存済み作品画像の上書き・改ざん・消去を全面禁止。
 
@@ -353,17 +353,17 @@
   - セッションアフィニティ有効化（`sessionAffinity: 'true'`）。
 
 ### ⑤ Instagram トークン運用・更新手順仕様
-- **トークン種別**: 長期ユーザートークン（有効期限: 60日間）
-  - ※Meta Graph API の仕様上、本アカウント（`@atelier_kanna1212`）はスタンドアローンの Instagram プロフェッショナルアカウントであるため、Facebook ページ経由の無期限トークンは発行不可（60日トークンでの定期更新が必須）。
+- **トークン種別**: 長期アクセストークン（有効期限: 60日間）
+  - ※連携先の Facebook ページ（「アトリエ＿かんな」、ページID: `1001385026388800`）が存在し本Instagramアカウント（`@atelier_kanna1212`）とリンクされているため、Meta Graph API の仕様上はページアクセストークン（無期限トークン）の取得・利用も可能です。ただし、現在は動作実績とセキュリティ検証が確立されている長期アクセストークン（有効期限: 60日間）を採用して安定稼働させており、展示運用期間を確実にカバーできるよう、60日ごとの定期更新手順を運用ルールとして定めています（無期限ページアクセストークンへの切り替えも技術的に可能）。
 - **有効期限の監視・確認**:
   - ヘルスチェックAPI: `GET /api/instagram/token-status`
   - レスポンス例: `{"valid": true, "remainingDays": 59}`
   - アカウントIDや内部トークン情報は非返却として安全化済み。
 - **更新手順（60日ごと、次回目安: 2026年11月下旬〜12月5日）**:
   1. **短期トークン取得**: Meta for Developers（グラフAPIエクスプローラ）で該当アプリ・アカウントを選択し、`instagram_basic`, `instagram_content_publish` 権限を付与して短期トークンを発行。
-  2. **長期トークン（60日）への交換**: 以下の Meta OAuth エンドポイントをブラウザまたは curl で呼び出し。
+  2. **長期トークン（60日）への交換**: 以下の Meta OAuth エンドポイントをブラウザまたは curl で呼び出し（`server.js` と同じ `v18.0` を使用）。
      ```bash
-     curl "https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id={APP_ID}&client_secret={APP_SECRET}&fb_exchange_token={SHORT_LIVED_TOKEN}"
+     curl "https://graph.facebook.com/v18.0/oauth/access_token?grant_type=fb_exchange_token&client_id={APP_ID}&client_secret={APP_SECRET}&fb_exchange_token={SHORT_LIVED_TOKEN}"
      ```
   3. **Cloud Run 環境変数の更新（反映）**:
      ```bash
