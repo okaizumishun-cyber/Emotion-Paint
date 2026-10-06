@@ -350,6 +350,43 @@
 ### ④ Cloud Run スケーリング仕様
 - **シングルインスタンス運用（min: 1, max: 1）**:
   - メモリ上のセッション・トークン・作品キャッシュの整合性を担保し、同時接続時の同期ズレやインスタンス間不整合を完全に防止。
+  - セッションアフィニティ有効化（`sessionAffinity: 'true'`）。
 
+### ⑤ Instagram トークン運用・更新手順仕様
+- **トークン種別**: 長期ユーザートークン（有効期限: 60日間）
+  - ※Meta Graph API の仕様上、本アカウント（`@atelier_kanna1212`）はスタンドアローンの Instagram プロフェッショナルアカウントであるため、Facebook ページ経由の無期限トークンは発行不可（60日トークンでの定期更新が必須）。
+- **有効期限の監視・確認**:
+  - ヘルスチェックAPI: `GET /api/instagram/token-status`
+  - レスポンス例: `{"valid": true, "remainingDays": 59}`
+  - アカウントIDや内部トークン情報は非返却として安全化済み。
+- **更新手順（60日ごと、次回目安: 2026年11月下旬〜12月5日）**:
+  1. **短期トークン取得**: Meta for Developers（グラフAPIエクスプローラ）で該当アプリ・アカウントを選択し、`instagram_basic`, `instagram_content_publish` 権限を付与して短期トークンを発行。
+  2. **長期トークン（60日）への交換**: 以下の Meta OAuth エンドポイントをブラウザまたは curl で呼び出し。
+     ```bash
+     curl "https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id={APP_ID}&client_secret={APP_SECRET}&fb_exchange_token={SHORT_LIVED_TOKEN}"
+     ```
+  3. **Cloud Run 環境変数の更新（反映）**:
+     ```bash
+     gcloud run services update emotion-paint --region asia-northeast1 --project sotuten-32fea --update-env-vars "INSTAGRAM_ACCESS_TOKEN={NEW_LONG_LIVED_TOKEN}"
+     ```
+     ※Web管理画面（`/admin/token`）はセキュリティ上完全削除されており、gcloud CLI 経由で安全に反映する。
 
+### ⑥ Instagram 投稿数上限（レートリミット）と運用設計
+- **24時間あたりの投稿上限枠（`content_publishing_limit`）**: **100 投稿 / 24時間**
+  - Meta Graph API の `/{ig-user-id}/content_publishing_limit` エンドポイントにて実測確認済み（`quota_total: 100`, `quota_usage: 0`）。
+- **1日の想定体験数との比較**:
+  - 展示会場における想定体験数: **50名 / 日**
+  - 最大必要投稿数: 50 投稿（上限枠 100件 に対し 使用率 50%）
+- **運用評価**:
+  - 1日50人の運用であれば、Meta API のレートリミット（100件/24h）を大幅に下回る十分な安全マージン（50%）が確保されており、途中で投稿制限にかかることなく終日安定稼働が可能。
 
+### ⑦ 縦型モニター・Instagram カルーセル画像最適化仕様
+- **Instagram カルーセル要件**:
+  - アスペクト比 1:1（正方形）、解像度 1080×1080px。
+  - 構成: 4方向キャプチャ（正面・右・背面・左）＋ サイン画像の計5枚。
+- **撮影時カメラ一時調整（余白最適化）**:
+  - 通常展示時: `camera.position.set(0, 2.5, 7.0)` （モニターいっぱいに大迫力で表示）
+  - キャプチャ撮影時（撮影の50ms間のみ一時的にカメラ位置・画角を変更し、撮影完了後に即座に通常位置へ復帰）:
+    - `vaseA`: `camera.position.set(0, 2.05, 7.84); camera.lookAt(0, 1.748, 0);`（上下余白: 約 7〜9px）
+    - `vaseB`: `camera.position.set(0, 2.06, 8.26); camera.lookAt(0, 1.740, 0);`（上下余白: 約 6px）
+  - これにより、壺の口（TOP）から底（END）までが上下・左右ともに約 5〜10px の極小余白で、壺の輪郭が美しく最大サイズで正方形に収まり、上下切れも過剰な余白も完全に防止。

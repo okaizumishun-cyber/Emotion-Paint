@@ -3049,10 +3049,15 @@ float vaseHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758
             const cropX = (srcW - cropSize) / 2;
             const cropY = (srcH - cropSize) / 2;
 
-            // キャプチャ時専用のカメラ調整（壺全体が正方形内に美しく収まるように一時的に引く）
+            // キャプチャ時専用のカメラ調整（壺の形状に合わせて上下余白を約5〜10pxに最適化）
+            const isVaseB = (saveData && saveData.vaseShape === 'vaseB') || (typeof currentVaseShape !== 'undefined' && currentVaseShape === 'vaseB');
+            const targetCamZ = isVaseB ? 8.26 : 7.84;
+            const targetCamY = isVaseB ? 2.06 : 2.05;
+            const targetLookY = isVaseB ? 1.740 : 1.748;
+
             const savedCamPos = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
-            camera.position.set(0, 2.0, 9.2);
-            camera.lookAt(0, 1.55, 0);
+            camera.position.set(0, targetCamY, targetCamZ);
+            camera.lookAt(0, targetLookY, 0);
 
             const savedRotation = vase.rotation.y;
             for (let i = 0; i < captureAngles.length; i++) {
