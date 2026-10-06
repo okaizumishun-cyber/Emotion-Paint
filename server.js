@@ -60,9 +60,12 @@ function buildCaption(effectValues) {
 // JSON body parser (50MB limit for base64 images)
 app.use(express.json({ limit: '50mb' }));
 
-// Redirect root URL without parameters to ?role=viewer
+// Valid application roles
+const VALID_ROLES = ['controller', 'viewer'];
+
+// Redirect root URL to ?role=viewer when role is missing or invalid
 app.get('/', (req, res, next) => {
-  if (!req.query.role && !req.query.screen) {
+  if (!req.query.role || !VALID_ROLES.includes(req.query.role)) {
     return res.redirect('/?role=viewer');
   }
   next();

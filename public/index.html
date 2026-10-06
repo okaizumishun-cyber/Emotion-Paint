@@ -7,11 +7,24 @@
   <title>Emotion-Paint</title>
   <script>
     (function () {
+      const APP_ROLES = Object.freeze({
+        CONTROLLER: 'controller',
+        VIEWER: 'viewer'
+      });
+      window.APP_ROLES = APP_ROLES;
+
       const p = new URLSearchParams(window.location.search);
-      const r = p.get('screen') || p.get('role');
-      document.title = (r === 'controller' || r === 'paint')
+      const rawRole = p.get('role');
+      const role = (rawRole === APP_ROLES.CONTROLLER) ? APP_ROLES.CONTROLLER : APP_ROLES.VIEWER;
+      window.APP_ROLE = role;
+
+      document.title = (role === APP_ROLES.CONTROLLER)
         ? 'Emotion-Paint (操作画面)'
         : 'Emotion-Paint (展示スクリーン)';
+
+      if (rawRole !== APP_ROLES.CONTROLLER && rawRole !== APP_ROLES.VIEWER) {
+        history.replaceState(null, '', '?role=' + APP_ROLES.VIEWER);
+      }
     })();
   </script>
   <link
@@ -1101,15 +1114,7 @@
 
     const GALLERY_PATH = `artifacts/${appId}/public/data/gallery`;
 
-    const params = new URLSearchParams(location.search);
-    const role = params.get('screen') || params.get('role') || 'viewer';
-
-    if (!params.get('screen') && !params.get('role')) {
-      history.replaceState(null, '', '?role=viewer');
-    }
-    document.title = (role === 'controller' || role === 'paint')
-      ? 'Emotion-Paint (操作画面)'
-      : 'Emotion-Paint (展示スクリーン)';
+    const role = window.APP_ROLE || (window.APP_ROLES && window.APP_ROLES.VIEWER) || 'viewer';
 
     // Robust Socket.io with auto-reconnect
     let socket;
@@ -1255,7 +1260,7 @@
     // ══════════════════════════════════════════════════════════════
     //  CONTROLLER
     // ══════════════════════════════════════════════════════════════
-    if (role === 'paint' || role === 'controller') {
+    if (role === (window.APP_ROLES?.CONTROLLER || 'controller')) {
       document.getElementById('controller-ui').style.display = 'block';
 
       const canvas = document.getElementById('paint-canvas');
@@ -2308,7 +2313,7 @@
     // ══════════════════════════════════════════════════════════════
     //  VIEWER
     // ══════════════════════════════════════════════════════════════
-    if (role === 'viewer') {
+    if (role === (window.APP_ROLES?.VIEWER || 'viewer')) {
       const container = document.getElementById('viewer-ui');
       container.style.display = 'block';
 
